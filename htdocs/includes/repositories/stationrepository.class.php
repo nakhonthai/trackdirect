@@ -117,25 +117,33 @@ class StationRepository extends ModelRepository
      * @param  int   $offset
      * @return array
      */
-    public function getObjectList($activeDuringLatestNumberOfSeconds = (24*60*60), $limit, $offset)
+    public function getObjectList($activeDuringLatestNumberOfSeconds = (24*60*60), $limit, $offset, $filter_source = 0)
     {
         if ($activeDuringLatestNumberOfSeconds == 0) {
             $activeDuringLatestNumberOfSeconds = time();
         }
 
+        // Filter sources
+        $filter_query = $filter_source ? 'and source_id = :fs' : '';
+
         $pdo = PDOConnection::getInstance();
         $stmt = $pdo->prepare(
             'select * from station
             where latest_confirmed_packet_timestamp is not null
-                and latest_confirmed_packet_timestamp > ?
-                and (source_id != 5 or latest_confirmed_packet_timestamp > ?)
+                and latest_confirmed_packet_timestamp > :ts1
+                and (source_id != 5 or latest_confirmed_packet_timestamp > :ts2)
+                ' . $filter_query . '
             order by latest_confirmed_packet_timestamp desc
-            limit ? offset ?'
+            limit :limit offset :offset'
         );
-        $stmt->bindValue(1, (time() - $activeDuringLatestNumberOfSeconds));
-        $stmt->bindValue(2, (time() - (60*60*24))); // OGN data should be deleted after 24h, but just to be safe we avoid including older data when searching
-        $stmt->bindValue(3, $limit);
-        $stmt->bindValue(4, $offset);
+        $stmt->bindValue(':ts1', (time() - $activeDuringLatestNumberOfSeconds));
+        $stmt->bindValue(':ts2', (time() - (60*60*24))); // OGN data should be deleted after 24h, but just to be safe we avoid including older data when searching
+        $stmt->bindValue(':limit', $limit);
+        $stmt->bindValue(':offset', $offset);
+
+        if ($filter_source) {
+          $stmt->bindValue(':fs', intval($filter_source));
+        }
 
         $stmt->execute();
         $records = $stmt->fetchAll(PDO::FETCH_ASSOC);

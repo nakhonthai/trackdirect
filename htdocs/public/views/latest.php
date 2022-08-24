@@ -7,7 +7,8 @@
     $rows = 50;
     $offset = ($page - 1) * $rows;
 
-    $stations = StationRepository::getInstance()->getObjectList($seconds, $rows, $offset);
+    $source = $_GET['source'] ?? 0;
+    $stations = StationRepository::getInstance()->getObjectList($seconds, $rows, $offset, $source);
     $count = StationRepository::getInstance()->getNumberOfStations($seconds);
 
     $pages = ceil($count / $rows);
@@ -17,16 +18,24 @@
 <div class="modal-inner-content" style="padding-bottom: 30px;">
     <?php if (count($stations) > 0) : ?>
         <p>
+            <span>
+                <form name="filtersource" method="get" action="/views/latest.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&source=<?php echo $source; ?>&page=<?php echo $page ?>" style="float:right;">
+                  Filter by:
+                    <input type="radio" name="source" value="0" <?php if ($source == 0) echo 'checked="checked"'; ?> onclick="document.forms[0].submit()" /> All
+                    <input type="radio" name="source" value="1" <?php if ($source == 1) echo 'checked="checked"'; ?>  onclick="document.forms[0].submit()" /> APRS-IS
+                    <input type="radio" name="source" value="2" <?php if ($source == 2) echo 'checked="checked"'; ?>  onclick="document.forms[0].submit()" /> CWOP
+                </form>
+            </span>
             <?php echo $count; ?> station(s) have been heard in the last 24 hours.
         </p>
 
         <?php if ($pages > 1): ?>
             <div class="pagination">
-              <a class="tdlink" href="/views/latest.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&page=1"><<</a>
+              <a class="tdlink" href="/views/latest.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&source=<?php echo $source; ?>&page=1"><<</a>
               <?php for($i = max(1, $page - 3); $i <= min($pages, $page + 3); $i++) : ?>
-              <a href="/views/latest.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
+              <a href="/views/latest.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&source=<?php echo $source; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
               <?php endfor; ?>
-              <a class="tdlink" href="/views/latest.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&page=<?php echo $pages; ?>">>></a>
+              <a class="tdlink" href="/views/latest.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&source=<?php echo $source; ?>&page=<?php echo $pages; ?>">>></a>
             </div>
         <?php endif; ?>
 
