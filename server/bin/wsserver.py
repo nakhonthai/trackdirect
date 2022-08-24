@@ -23,7 +23,7 @@ def master(options, trackDirectLogger):
 
     workerPid = os.getpid()
     p = psutil.Process(workerPid)
-    p.cpu_affinity([0])
+
     trackDirectLogger.warning("Starting master with PID " + str(workerPid) + " (on CPU id(s): " + ','.join(map(str, p.cpu_affinity())) + ")")
 
     try:
@@ -66,7 +66,6 @@ def worker(options, trackDirectLogger):
     try:
         workerPid = os.getpid()
         p = psutil.Process(workerPid)
-        p.cpu_affinity([options.cpuid])
 
         trackDirectLogger.warning("Starting worker with PID " + str(workerPid) + " (on CPU id(s): " + ','.join(map(str, p.cpu_affinity())) + ")")
 
