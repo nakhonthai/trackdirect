@@ -5,6 +5,7 @@
     <div class="modal-inner-content-menu">
         <span>About</span>
         <a href="/views/faq.php" class="tdlink" title="Frequently asked questions">FAQ</a>
+        <a href="/views/site_statistics.php" class="tdlink" title="Website and server statistics!">Statistics</a>
     </div>
     <div class="horizontal-line">&nbsp;</div>
 
@@ -15,7 +16,7 @@
     <img src="/images/aprs-symbols.png" title="APRS symbols" style="width:100%"/>
 
     <p>
-        This website is based on the APRS Track Direct tools. Read more about APRS Track Direct <a href="https://www.aprsdirect.com" target="_blank">here</a> or go directly to <a href="https://github.com/qvarforth/trackdirect" target="_blank">GitHub</a>. In addition to a map with fast APRS data updates, APRS Track direct also provides related functions such as <a href="/views/latest.php" class="tdlink" title="List latest heard stations">Latest heard</a> and <a href="/views/search.php" class="tdlink" title="Search for stations">Station search</a> etc. 
+        This website is based on the APRS Track Direct tools. Read more about APRS Track Direct <a href="https://www.aprsdirect.com" target="_blank">here</a> or go directly to <a href="https://github.com/qvarforth/trackdirect" target="_blank">GitHub</a>. In addition to a map with fast APRS data updates, APRS Track direct also provides related functions such as <a href="/views/latest.php" class="tdlink" title="List latest heard stations">Latest heard</a> and <a href="/views/search.php" class="tdlink" title="Search for stations">Station search</a> etc.
     </p>
 
     <h3>What is APRS?</h3>

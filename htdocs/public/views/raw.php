@@ -85,13 +85,12 @@
                         <span class="raw-packet-timestamp"><?php echo $packet->timestamp; ?></span>:
 
                         <?php if (in_array($packet->mapId, Array(3, 6))) : ?>
-                        <span class="raw-packet-error">
+                        <span class="raw-packet-error parsepkt">
                         <?php else : ?>
-                        <span>
+                        <span class="parsepkt">
                         <?php endif; ?>
 
                             <?php echo str_replace_first(htmlspecialchars($station->name . '>'), '<b>' . htmlspecialchars($station->name) . '</b>&gt;', htmlspecialchars($packet->raw)); ?>
-
                             <?php if ($packet->mapId == 3) : ?>
                             &nbsp;<b>[Duplicate]</b>
                             <?php elseif ($packet->mapId == 6) : ?>
@@ -494,6 +493,22 @@
 
             $('#raw-rows').change(function () {
                 loadView("/views/raw.php?id=<?php echo $station->id ?>&type=" + $('#raw-type').val() + "&category=" + $('#raw-category').val() + "&rows=" + $('#raw-rows').val() + "&page=1");
+            });
+
+            $('.parsepkt').each(function(){
+              const packet = $(this).text();
+              const p1 = packet.split(">");
+              const p2 = p1[1].split(":");
+              const p3 = p2[0].split(",");
+              p2.shift();
+
+              p3.forEach(function(v, k, p3) {
+                if (k==0) return;
+                if (v.indexOf('WIDE') == -1 && v.indexOf('RELAY') == -1 && v.indexOf('TRACE') == -1 && v.indexOf('qA') == -1 && v.indexOf('TCP') == -1 && v.indexOf('T2') == -1 && v.indexOf('CWOP') == -1) {
+                  p3[k] = '<b><a href="overview.php?c='+encodeURI(v.replace('*', ''))+'&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">'+v+'</a></b>';
+                }
+              });
+              $(this).html('<b><a href="overview.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">'+p1[0]+'</a></b>&gt;'+p3.join(',')+':' +p2.join(':'));
             });
 
             if (window.trackdirect) {

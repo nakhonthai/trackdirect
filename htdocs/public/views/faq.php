@@ -5,6 +5,7 @@
     <div class="modal-inner-content-menu">
         <a href="/views/about.php" class="tdlink" title="More about this website!">About</a>
         <span>FAQ</span>
+        <a href="/views/site_statistics.php" class="tdlink" title="Website and server statistics!">Statistics</a>
     </div>
     <div class="horizontal-line">&nbsp;</div>
 

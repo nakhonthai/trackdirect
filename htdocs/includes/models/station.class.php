@@ -302,6 +302,25 @@ class Station extends Model
         }
     }
 
+    /**
+     * Get total packets recorded for the station
+     *
+     * @return int
+     */
+    public function getTotalPackets()
+    {
+        $pdo = PDOConnection::getInstance();
+
+        $sql = 'select count(id) c from packet where station_id = ?';
+        $stmt = $pdo->prepareAndExec($sql, [$this->id]);
+        $record = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!empty($record) && $record['c'] > 0) {
+            return $record['c'];
+        } else {
+            return null;
+        }
+    }
+
     /*
      * Returnes symbol description
      * @param boolean $includeUndefinedOverlay

@@ -63,7 +63,7 @@ a {
   width: 100%;
 
   color:  white;
-  text-align: center; 
+  text-align: center;
   font-size: 10px;
   line-height: 21px;
 
@@ -884,3 +884,11 @@ input[type=submit]:hover {
   }
 }
 
+.weather-gauge {
+  margin: 10px;
+}
+
+.gauge-cluster {
+  text-align: center;
+  margin-top: 20px;
+}

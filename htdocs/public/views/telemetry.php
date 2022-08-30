@@ -7,6 +7,8 @@
         if (!isAllowedToShowOlderData()) {
             $maxDays = 1;
         }
+        $format = $_GET['format'] ?? 'table';
+
         $page = $_GET['page'] ?? 1;
         $rows = $_GET['rows'] ?? 25;
         $offset = ($page - 1) * $rows;
@@ -16,7 +18,7 @@
         $pages = ceil($count / $rows);
     ?>
 
-    <title><?php echo $station->name; ?> Telemetry</title>
+    <title><?php echo $station->name; ?> Telemetry <?php echo ($format == 'graph') ? 'Graph' : 'Data'; ?></title>
     <div class="modal-inner-content">
         <div class="modal-inner-content-menu">
             <a class="tdlink" title="Overview" href="/views/overview.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Overview</a>
@@ -35,21 +37,28 @@
             <p>Telemetry packets is used to share measurements like repeteater parameters, battery voltage, radiation readings (or any other measurements).</p>
 
             <div class="form-container">
-                <select id="telemetry-category" style="float:left; margin-right: 5px;">
-                    <option <?php echo (($_GET['category'] ?? 1) == 1 ? 'selected' : ''); ?> value="1">Telemetry Values</option>
-                    <option <?php echo (($_GET['category'] ?? 1) == 2 ? 'selected' : ''); ?> value="2">Telemetry Bits</option>
-                </select>
+                <span style="float:right;">[ <a class="tdlink" href="/views/telemetry.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=1&format=<?php echo ($format == 'graph') ? 'table' : 'graph'; ?>">View <?php echo ($format == 'graph') ? 'Table' : 'Graph';?> </a>]</span>
 
-                <select id="telemetry-rows" style="float:left; margin-right: 5px;" class="pagination-rows">
-                    <option <?php echo ($rows == 25 ? 'selected' : ''); ?> value="25">25 rows</option>
-                    <option <?php echo ($rows == 50 ? 'selected' : ''); ?> value="50">50 rows</option>
-                    <option <?php echo ($rows == 100 ? 'selected' : ''); ?> value="100">100 rows</option>
-                    <option <?php echo ($rows == 200 ? 'selected' : ''); ?> value="200">200 rows</option>
-                    <option <?php echo ($rows == 300 ? 'selected' : ''); ?> value="300">300 rows</option>
-                </select>
+                <?php if ($format == 'table'): ?>
+                  <select id="telemetry-category" style="float:left; margin-right: 5px;">
+                      <option <?php echo (($_GET['category'] ?? 1) == 1 ? 'selected' : ''); ?> value="1">Telemetry Values</option>
+                      <option <?php echo (($_GET['category'] ?? 1) == 2 ? 'selected' : ''); ?> value="2">Telemetry Bits</option>
+                  </select>
+
+                  <select id="telemetry-rows" style="float:left; margin-right: 5px;" class="pagination-rows">
+                      <option <?php echo ($rows == 25 ? 'selected' : ''); ?> value="25">25 rows</option>
+                      <option <?php echo ($rows == 50 ? 'selected' : ''); ?> value="50">50 rows</option>
+                      <option <?php echo ($rows == 100 ? 'selected' : ''); ?> value="100">100 rows</option>
+                      <option <?php echo ($rows == 200 ? 'selected' : ''); ?> value="200">200 rows</option>
+                      <option <?php echo ($rows == 300 ? 'selected' : ''); ?> value="300">300 rows</option>
+                  </select>
+                <?php else: ?>
+                  <?php $lastEntry = end($telemetryPackets); reset($telemetryPackets); ?>
+                  <span style-="float:left;">Displaying data from <span id="oldest-timestamp" style="font-weight:bold;"></span> to <span id="latest-timestamp" style="font-weight:bold;"></b></span>.  <span id="records"></span> (max 250)</span>
+                <?php endif; ?>
             </div>
 
-            <?php if ($pages > 1): ?>
+            <?php if ($pages > 1 && $format == 'table'): ?>
                 <div class="pagination">
                   <a class="tdlink" href="/views/telemetry.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
                   <?php for($i = max(1, $page - 3); $i <= min($pages, $page + 3); $i++) : ?>
@@ -60,181 +69,266 @@
             <?php endif; ?>
 
             <?php if (($_GET['category'] ?? 1) == 1) : ?>
-            <div class="datagrid datagrid-telemetry1" style="max-width:1000px;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(1)); ?>*</th>
-                            <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(2)); ?>*</th>
-                            <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(3)); ?>*</th>
-                            <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(4)); ?>*</th>
-                            <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(5)); ?>*</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($telemetryPackets as $packetTelemetry) : ?>
+              <?php if ($format == 'graph'): ?>
+                <?php for ($graphIdx = 1; $graphIdx < 6; $graphIdx++) : ?>
+                  <?php
+                    if (
+                        ($graphIdx == 1 && $telemetryPackets[0]->val1 === null) ||
+                        ($graphIdx == 2 && $telemetryPackets[0]->val2 === null) ||
+                        ($graphIdx == 3 && $telemetryPackets[0]->val3 === null) ||
+                        ($graphIdx == 4 && $telemetryPackets[0]->val4 === null) ||
+                        ($graphIdx == 5 && $telemetryPackets[0]->val5 === null)
+                      ) {
+                      continue;
+                    }
+                  ?>
+                  <div style="width:100%;background:#dddddd;padding:2px;font-weight:bold;"><?php echo $station->name; ?> [<?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName($graphIdx)); ?>]</div>
+                  <canvas id="graph_<?php echo $graphIdx; ?>" height="80"></canvas>
+                  <div style="height:20px;"></div>
+                <?php endfor; ?>
+                <script type="text/javascript">
+                  for (let i = 1; i < 6; i++) {
+                    window['ctx_'+i] = document.getElementById('graph_'+i);
+                    if (window['ctx_'+i] == null) continue;
+                    window['chart_'+i] = new Chart(window['ctx_'+i], {
+                      type: 'line',
+                      data: {
+                          datasets: [{
+                              label: "",
+                              data: [],
+                              borderWidth: 1
+                          }]
+                      },
+                      options: {
+                        maintainAspectRatio: true,
+                        scales: {
+                          x: {
+                            type: 'time',
+                            time: {
+                              unit: 'minute',
+                              displayFormats: {
+                                  minute: 'MMM DD hh:mm a'
+                              },
+                              tooltipFormat: 'MMM DD hh:mm a'
+                            },
+                            title: {
+                              display: false
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 20
+                            }
+                          },
+                          y: {
+                            title: {
+                              display: true,
+                              text: 'value'
+                            }
+                          }
+                        }
+                      }
+                    }); // End chart
+                  }
+                  $(document).ready(function() {
+                    for (let i = 1; i < 6; i++) {
+                      if (window['chart_'+i] != null) {
+                        $.getJSON('/data/graph.php?id=<?php echo $station->id ?>&type=telemetry&index=' + i).done(function(response) {
+                          $('#oldest-timestamp').text(response.oldest_timestamp);
+                          $('#latest-timestamp').text(response.latest_timestamp);
+                          $('#oldest-timestamp, #latest-timestamp').each(function() {
+                            if ($(this).html().trim() != '' && !isNaN($(this).html().trim())) {
+                              $(this).html(moment(new Date(1000 * $(this).html())).format('L LTS'));
+                            }
+                          });
+                          $('#records').text(response.records + ' records found');
 
-                        <tr>
-                            <td class="telemetrytime">
-                                <?php echo ($packetTelemetry->wxRawTimestamp != null?$packetTelemetry->wxRawTimestamp:$packetTelemetry->timestamp); ?>
-                            </td>
-                            <td>
-                                <?php if ($packetTelemetry->val1 !== null) : ?>
-                                    <?php echo round($packetTelemetry->getValue(1), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(1)); ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($packetTelemetry->val1 !== null) : ?>
-                                    <?php echo round($packetTelemetry->getValue(2), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(2)); ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($packetTelemetry->val1 !== null) : ?>
-                                    <?php echo round($packetTelemetry->getValue(3), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(3)); ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($packetTelemetry->val1 !== null) : ?>
-                                    <?php echo round($packetTelemetry->getValue(4), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(4)); ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($packetTelemetry->val1 !== null) : ?>
-                                    <?php echo round($packetTelemetry->getValue(5), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(5)); ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                            </td>
-                        </tr>
+                          window['chart_'+i].data.datasets[0].data = response.data;
+                          window['chart_'+i].data.datasets[0].label = response.label;
+                          if (response.borderColor != null) window['chart_'+i].data.datasets[0].borderColor = response.borderColor;
+                          if (response.borderColor != null) window['chart_'+i].data.datasets[0].backgroundColor = response.backgroundColor;
+                          window['chart_'+i].update();
+                        });
+                      }
+                    }
+                  });
+                </script>
+              <?php endif; ?>
+              <?php if ($format == 'table'): ?>
+              <div class="datagrid datagrid-telemetry1" style="max-width:1000px;">
+                  <table>
+                      <thead>
+                          <tr>
+                              <th>Time</th>
+                              <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(1)); ?>*</th>
+                              <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(2)); ?>*</th>
+                              <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(3)); ?>*</th>
+                              <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(4)); ?>*</th>
+                              <th><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(5)); ?>*</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                      <?php foreach ($telemetryPackets as $packetTelemetry) : ?>
 
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                          <tr>
+                              <td class="telemetrytime">
+                                  <?php echo ($packetTelemetry->wxRawTimestamp != null?$packetTelemetry->wxRawTimestamp:$packetTelemetry->timestamp); ?>
+                              </td>
+                              <td>
+                                  <?php if ($packetTelemetry->val1 !== null) : ?>
+                                      <?php echo round($packetTelemetry->getValue(1), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(1)); ?>
+                                  <?php else : ?>
+                                      -
+                                  <?php endif; ?>
+                              </td>
+                              <td>
+                                  <?php if ($packetTelemetry->val1 !== null) : ?>
+                                      <?php echo round($packetTelemetry->getValue(2), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(2)); ?>
+                                  <?php else : ?>
+                                      -
+                                  <?php endif; ?>
+                              </td>
+                              <td>
+                                  <?php if ($packetTelemetry->val1 !== null) : ?>
+                                      <?php echo round($packetTelemetry->getValue(3), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(3)); ?>
+                                  <?php else : ?>
+                                      -
+                                  <?php endif; ?>
+                              </td>
+                              <td>
+                                  <?php if ($packetTelemetry->val1 !== null) : ?>
+                                      <?php echo round($packetTelemetry->getValue(4), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(4)); ?>
+                                  <?php else : ?>
+                                      -
+                                  <?php endif; ?>
+                              </td>
+                              <td>
+                                  <?php if ($packetTelemetry->val1 !== null) : ?>
+                                      <?php echo round($packetTelemetry->getValue(5), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(5)); ?>
+                                  <?php else : ?>
+                                      -
+                                  <?php endif; ?>
+                              </td>
+                          </tr>
 
-            <div class="telemetry-subtable">
-                <div>
-                    <div>
-                        *Used Equation Coefficients:
-                    </div>
-                    <div>
-                        <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(1)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(1)); ?>
-                    </div>
-                    <div>
-                        <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(2)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(2)); ?>
-                    </div>
-                    <div>
-                        <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(3)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(3)); ?>
-                    </div>
-                    <div>
-                        <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(4)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(4)); ?>
-                    </div>
-                    <div>
-                        <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(5)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(5)); ?>
-                    </div>
-                </div>
-            </div>
+                      <?php endforeach; ?>
+                      </tbody>
+                  </table>
+              </div>
+
+              <div class="telemetry-subtable">
+                  <div>
+                      <div>
+                          *Used Equation Coefficients:
+                      </div>
+                      <div>
+                          <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(1)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(1)); ?>
+                      </div>
+                      <div>
+                          <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(2)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(2)); ?>
+                      </div>
+                      <div>
+                          <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(3)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(3)); ?>
+                      </div>
+                      <div>
+                          <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(4)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(4)); ?>
+                      </div>
+                      <div>
+                          <?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(5)); ?>: <?php echo implode(', ', $latestPacketTelemetry->getEqnsValue(5)); ?>
+                      </div>
+                  </div>
+              </div>
+          <?php endif; ?>
+
+              <?php if (($_GET['category'] ?? 1) == 2) : ?>
+                  <div class="datagrid datagrid-telemetry2" style="max-width:1000px;">
+                      <table>
+                          <thead>
+                              <tr>
+                                  <th>Time</th>
+                                  <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(1)); ?>*</th>
+                                  <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(2)); ?>*</th>
+                                  <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(3)); ?>*</th>
+                                  <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(4)); ?>*</th>
+                                  <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(5)); ?>*</th>
+                                  <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(6)); ?>*</th>
+                                  <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(7)); ?>*</th>
+                                  <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(8)); ?>*</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                          <?php foreach ($telemetryPackets as $i => $packetTelemetry) : ?>
+                              <?php if ($packetTelemetry->bits !== null && $i >= 2 ) : ?>
+                              <tr>
+                                  <td class="telemetrytime">
+                                      <?php echo $packetTelemetry->timestamp; ?>
+                                  </td>
+                                  <td>
+                                      <div class="<?php echo ($packetTelemetry->getBit(1) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
+                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(1)); ?>
+                                      </div>
+                                  </td>
+                                  <td>
+                                      <div class="<?php echo ($packetTelemetry->getBit(2) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
+                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(2)); ?>
+                                      </div>
+                                  </td>
+                                  <td>
+                                      <div class="<?php echo ($packetTelemetry->getBit(3) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
+                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(3)); ?>
+                                      </div>
+                                  </td>
+                                  <td>
+                                      <div class="<?php echo ($packetTelemetry->getBit(4) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
+                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(4)); ?>
+                                      </div>
+                                  </td>
+                                  <td>
+                                      <div class="<?php echo ($packetTelemetry->getBit(5) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
+                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(5)); ?>
+                                      </div>
+                                  </td>
+                                  <td>
+                                      <div class="<?php echo ($packetTelemetry->getBit(6) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
+                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(6)); ?>
+                                      </div>
+                                  </td>
+                                  <td>
+                                      <div class="<?php echo ($packetTelemetry->getBit(7) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
+                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(7)); ?>
+                                      </div>
+                                  </td>
+                                  <td>
+                                      <div class="<?php echo ($packetTelemetry->getBit(8) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
+                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(8)); ?>
+                                      </div>
+                                  </td>
+                              </tr>
+                              <?php endif; ?>
+                          <?php endforeach; ?>
+                          </tbody>
+                      </table>
+                  </div>
+
+                  <div class="telemetry-subtable">
+                      <div>
+                          <div>
+                              *Used Bit Sense:
+                          </div>
+                          <div>
+                              <?php echo $latestPacketTelemetry->getBitSense(1); ?>
+                              <?php echo $latestPacketTelemetry->getBitSense(2); ?>
+                              <?php echo $latestPacketTelemetry->getBitSense(3); ?>
+                              <?php echo $latestPacketTelemetry->getBitSense(4); ?>
+                              <?php echo $latestPacketTelemetry->getBitSense(5); ?>
+                              <?php echo $latestPacketTelemetry->getBitSense(6); ?>
+                              <?php echo $latestPacketTelemetry->getBitSense(7); ?>
+                              <?php echo $latestPacketTelemetry->getBitSense(8); ?>
+                          </div>
+                      </div>
+                  </div>
+              <?php endif; ?>
+          <?php endif; ?>
         <?php endif; ?>
-
-            <?php if (($_GET['category'] ?? 1) == 2) : ?>
-                <div class="datagrid datagrid-telemetry2" style="max-width:1000px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(1)); ?>*</th>
-                                <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(2)); ?>*</th>
-                                <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(3)); ?>*</th>
-                                <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(4)); ?>*</th>
-                                <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(5)); ?>*</th>
-                                <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(6)); ?>*</th>
-                                <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(7)); ?>*</th>
-                                <th><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(8)); ?>*</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($telemetryPackets as $i => $packetTelemetry) : ?>
-                            <?php if ($packetTelemetry->bits !== null && $i >= 2 ) : ?>
-                            <tr>
-                                <td class="telemetrytime">
-                                    <?php echo $packetTelemetry->timestamp; ?>
-                                </td>
-                                <td>
-                                    <div class="<?php echo ($packetTelemetry->getBit(1) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                        <?php echo htmlspecialchars($packetTelemetry->getBitLabel(1)); ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="<?php echo ($packetTelemetry->getBit(2) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                        <?php echo htmlspecialchars($packetTelemetry->getBitLabel(2)); ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="<?php echo ($packetTelemetry->getBit(3) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                        <?php echo htmlspecialchars($packetTelemetry->getBitLabel(3)); ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="<?php echo ($packetTelemetry->getBit(4) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                        <?php echo htmlspecialchars($packetTelemetry->getBitLabel(4)); ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="<?php echo ($packetTelemetry->getBit(5) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                        <?php echo htmlspecialchars($packetTelemetry->getBitLabel(5)); ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="<?php echo ($packetTelemetry->getBit(6) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                        <?php echo htmlspecialchars($packetTelemetry->getBitLabel(6)); ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="<?php echo ($packetTelemetry->getBit(7) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                        <?php echo htmlspecialchars($packetTelemetry->getBitLabel(7)); ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="<?php echo ($packetTelemetry->getBit(8) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                        <?php echo htmlspecialchars($packetTelemetry->getBitLabel(8)); ?>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="telemetry-subtable">
-                    <div>
-                        <div>
-                            *Used Bit Sense:
-                        </div>
-                        <div>
-                            <?php echo $latestPacketTelemetry->getBitSense(1); ?>
-                            <?php echo $latestPacketTelemetry->getBitSense(2); ?>
-                            <?php echo $latestPacketTelemetry->getBitSense(3); ?>
-                            <?php echo $latestPacketTelemetry->getBitSense(4); ?>
-                            <?php echo $latestPacketTelemetry->getBitSense(5); ?>
-                            <?php echo $latestPacketTelemetry->getBitSense(6); ?>
-                            <?php echo $latestPacketTelemetry->getBitSense(7); ?>
-                            <?php echo $latestPacketTelemetry->getBitSense(8); ?>
-                        </div>
-                    </div>
-                </div>
-            <?php endif; ?>
-        <?php endif; ?>
-
 
         <?php if (count($telemetryPackets) > 0) : ?>
             <br/>
@@ -282,6 +376,7 @@
                     });
                 <?php endif; ?>
             }
+
         });
     </script>
 <?php endif; ?>

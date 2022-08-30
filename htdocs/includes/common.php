@@ -112,6 +112,17 @@ function convertMbarToMmhg($value)
 }
 
 /**
+ * Convert hPa/mbar to inches hg
+ *
+ * @param  {float} value
+ * @return float
+ */
+function convertMbarToInchHg($value)
+{
+    return $value * 0.0295301;
+}
+
+/**
  * Returnes true if value is float
  *
  * @param  mixed $value
@@ -1890,4 +1901,3 @@ function getLngFromLngPixelCoordinate($lngPixelCoord, $zoom, $imageTileSize) {
     $lng = ((($lngPixelCoord / $scale) / $imageTileSize) - 0.5) * 360;
     return $lng;
 }
-
