@@ -446,13 +446,21 @@
             <?php if (count($closeByStations) > 1) : ?>
                 <div>
                     <div class="overview-content-summary-hr">Nearby stations/objects:</div>
-                    <div class="overview-content-station-list" title="The closest stations/objects at the current position">
+                    <div class="overview-content-station-list" title="The closest stations/objects at the current position"  style="width:100%">
+                      &nbsp;
+                      <span>
+                          <span class="nts" style="width:10.4em"><b>Last Received</b></span>
+                          <span style="width:7.7em"><b>Distance</b></span>
+                      </span>
+                      <br/>
+
                         <?php foreach ($closeByStations as $closeByStation) : ?>
                             <?php if ($closeByStation->id != $station->id) : ?>
 
                                 <img src="<?php echo $closeByStation->getIconFilePath(22, 22); ?>" alt="Symbol"/>&nbsp;
                                 <span>
                                     <a class="tdlink" href="/views/overview.php?id=<?php echo $closeByStation->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>"><?php echo htmlentities($closeByStation->name) ?></a>
+                                    <span class="nts"><?php echo $closeByStation->latestPacketTimestamp; ?></span>
                                     <span>
                                         <?php if (isImperialUnitUser()) : ?>
                                             <?php if (convertMeterToYard($closeByStation->getDistance($station->latestConfirmedLatitude, $station->latestConfirmedLongitude)) < 1000) : ?>
@@ -536,7 +544,7 @@
                 }
             });
 
-            $('#latest-timestamp, #comment-timestamp, #status-timestamp, #beacon-timestamp, #position-timestamp, #weather-timestamp, #telemetry-timestamp').each(function() {
+            $('#latest-timestamp, #comment-timestamp, #status-timestamp, #beacon-timestamp, #position-timestamp, #weather-timestamp, #telemetry-timestamp, .nts').each(function() {
                 if ($(this).html().trim() != '' && !isNaN($(this).html().trim())) {
                     $(this).html(moment(new Date(1000 * $(this).html())).format('L LTSZ'));
                 }

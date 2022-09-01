@@ -1416,7 +1416,7 @@ trackdirect.models.Map.prototype._getLeafletMapOptions = function () {
     attributionControl: true,
     zoomControl: false,
     minZoom: 3,
-    maxZoom: 16,
+    maxZoom: 19,
     closePopupOnClick: false,
   };
 

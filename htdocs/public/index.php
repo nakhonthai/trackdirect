@@ -19,10 +19,14 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w==" crossorigin="anonymous" />
 
         <!-- Track Direct js dependencies -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha512-jGsMH83oKe9asCpkOVkBnUrDDTp8wl+adkB2D+//JtlxO4SrLoJdhbOysIFQJloQFD+C4Fl1rMsQZF76JjV0eQ==" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment-with-locales.min.js" integrity="sha512-LGXaggshOkD/at6PFNcp2V2unf9LzFq6LE+sChH7ceMTDP0g2kn6Vxwgg7wkPP7AAtX+lmPqPdxB47A0Nz0cMQ==" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/autolinker/3.14.2/Autolinker.min.js" integrity="sha512-qyoXjTIJ69k6Ik7CxNVKFAsAibo8vW/s3WV3mBzvXz6Gq0yGup/UsdZBDqFwkRuevQaF2g7qhD3E4Fs+OwS4hw==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/autolinker/3.15.0/Autolinker.min.js" referrerpolicy="no-referrer"></script>
         <script src="/js/convex-hull.js" crossorigin="anonymous"></script>
+
+        <!-- JQuery UI -->
+        <script async src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
         <!-- Graphing dependencies -->
         <script async src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -236,9 +240,9 @@
                     <a href="javascript:void(0);" onclick="trackdirect.toggleImperialUnits(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox <?php echo (isImperialUnitUser()?'dropdown-content-checkbox-active':''); ?>" title="Switch to imperial units">Use imperial units</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleStationaryPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide stations that is not moving">Hide not moving stations</a>
 
-                    <!--
                     <a href="javascript:void(0);" onclick="trackdirect.toggleInternetPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide stations that sends packet using TCP/UDP">Hide Internet stations</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleCwopPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide CWOP weather stations">Hide CWOP stations</a>
+                    <!--
                     <a href="javascript:void(0);" onclick="trackdirect.toggleOgflymPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide model airplanes (OGFLYM)">Hide model airplanes (OGFLYM)</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleUnknownPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide unknown aircrafts">Hide unknown aircrafts</a>
                     -->
@@ -347,15 +351,24 @@
                         <p>Date and time:</p>
 
                         <form id="timetravel-form">
-                            <select id="timetravel-date" class="timetravel-select form-control"
-                                <option value="0" selected>Select date</option>
-                                <?php for($i=0; $i <= 10; $i++) : ?>
-                                    <?php $date = date('Y-m-d', strtotime("-$i days")); ?>
-                                    <option value="<?php echo $date; ?>"><?php echo $date; ?></option>
-                                <?php endfor; ?>
-                            </select>
+                           <input type="text" id="timetravel-date" class="form-control" placeholder="Select a start date" readonly>
+                           <script>
+                            const dbstart = moment("<?php echo getWebsiteConfig('database_start_date') ?>");
+                            const curtime = moment();
+                            var duration = moment.duration(curtime.diff(dbstart));
+                            var dbdays = Math.floor(duration.asDays());
+                            $(document).ready(function(){
+                              $("#timetravel-date").datepicker({
+                                  showOtherMonths: true,
+                                  selectOtherMonths: true,
+                                  minDate: -10,
+                                  maxDate: '0',
+                                  dateFormat: 'yy-mm-dd'
+                                });
+                            });
+                            </script>
 
-                            <select id="timetravel-time" class="timetravel-select form-control">
+                            <select id="timetravel-time" class="form-control" style="height:38px;">
                                 <option value="0" selected>Select time</option>
                                 <option value="00:00">00:00</option>
                                 <option value="01:00">01:00</option>

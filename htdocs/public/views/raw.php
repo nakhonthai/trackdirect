@@ -504,7 +504,7 @@
 
               p3.forEach(function(v, k, p3) {
                 if (k==0) return;
-                if (v.indexOf('WIDE') == -1 && v.indexOf('RELAY') == -1 && v.indexOf('TRACE') == -1 && v.indexOf('qA') == -1 && v.indexOf('TCP') == -1 && v.indexOf('T2') == -1 && v.indexOf('CWOP') == -1) {
+                if (v.indexOf('WIDE') == -1 && v.indexOf('RELAY') == -1 && v.indexOf('TRACE') == -1 && v.indexOf('qA') == -1 && v.indexOf('TCP') == -1 && v.indexOf('T2') == -1 && v.indexOf('CWOP') == -1 && v.indexOf('APRSFI') == -1) {
                   p3[k] = '<b><a href="overview.php?c='+encodeURI(v.replace('*', ''))+'&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">'+v+'</a></b>';
                 }
               });

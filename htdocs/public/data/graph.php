@@ -65,7 +65,7 @@ if ($station->isExistingObject()) {
             break;
           case 3: // Pressure
             foreach ($weatherPackets as $packetWeather) {
-              $response['data'][] = array('x' => ($packetWeather->wxRawTimestamp != null ? $packetWeather->wxRawTimestamp : $packetWeather->timestamp) * 1000, 'y' => isImperialUnitUser() ? round(convertMbarToMmhg($packetWeather->pressure), 1) : round($packetWeather->pressure, 1));
+              $response['data'][] = array('x' => ($packetWeather->wxRawTimestamp != null ? $packetWeather->wxRawTimestamp : $packetWeather->timestamp) * 1000, 'y' => isImperialUnitUser() ? round(convertMbarToInchHg($packetWeather->pressure), 1) : round($packetWeather->pressure, 1));
             }
             $response['borderColor'] = '#DF0101';
             $response['backgroundColor'] = '#FA5858';

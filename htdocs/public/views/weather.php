@@ -439,7 +439,7 @@
                               <td>
                                   <?php if ($packetWeather->pressure !== null) : ?>
                                       <?php if (isImperialUnitUser()) : ?>
-                                          <?php echo round(convertMbarToMmhg($packetWeather->pressure),1); ?> mmHg
+                                          <?php echo round(convertMbarToInchHg($packetWeather->pressure),1); ?> inHg
                                       <?php else : ?>
                                           <?php echo round($packetWeather->pressure,1); ?> hPa
                                       <?php endif; ?>
