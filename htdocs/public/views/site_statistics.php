@@ -1,11 +1,13 @@
 <?php require dirname(__DIR__) . "../../includes/bootstrap.php"; ?>
 
-<title>Site Statistics</title>
+<title>About / Site Statistics</title>
 <div class="modal-inner-content modal-inner-content-about" style="padding-bottom: 30px;">
     <div class="modal-inner-content-menu">
         <a href="/views/about.php" class="tdlink" title="More about this website!">About</a>
         <a href="/views/faq.php" class="tdlink" title="Frequently asked questions">FAQ</a>
         <span>Statistics</span>
+        <?php if (getWebsiteConfig('aprs_is_status_url')): ?><a href="/views/server_health.php?server=aprs" class="tdlink" title="APRS Server Health">APRS Server Health</a><?php endif; ?>
+        <?php if (getWebsiteConfig('cwop_is_status_url')): ?><a href="/views/server_health.php?server=cwop" class="tdlink" title="CWOP Server Health">CWOP Server Health</a><?php endif; ?>
     </div>
     <div class="horizontal-line">&nbsp;</div>
 

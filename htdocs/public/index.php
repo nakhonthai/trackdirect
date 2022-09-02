@@ -288,11 +288,42 @@
                 </div>
             </div>
 
-            <a href="/views/about.php"
-                class="tdlink"
-                title="More about this website!">
-                About
-            </a>
+            <div class="dropdown">
+                <button class="dropbtn">About
+                    <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="dropdown-content">
+                  <a href="/views/about.php"
+                      class="tdlink"
+                      title="More about this website!">
+                      About
+                  </a>
+                  <a href="/views/faq.php"
+                      class="tdlink"
+                      title="Frequently asked questions.">
+                      FAQ
+                  </a>
+                  <a href="/views/site_statistics.php"
+                      class="tdlink"
+                      title="Site database information!">
+                      Statistics
+                  </a>
+                  <?php if (getWebsiteConfig('aprs_is_status_url')): ?>
+                  <a href="/views/server_health.php?server=aprs"
+                      class="tdlink"
+                      title="APRS-IS (aprsc) Server Status">
+                      APRS-IS Server Status
+                  </a>
+                  <?php endif; ?>
+                  <?php if (getWebsiteConfig('cwop_is_status_url')): ?>
+                  <a href="/views/server_health.php?server=cwop"
+                      class="tdlink"
+                      title="CWOP (aprsc) Server Status">
+                      CWOP-IS Server Status
+                  </a>
+                  <?php endif; ?>
+                </div>
+            </div>
 
             <a class="tdlink" id="svrclock" style="float:right">00:00:00</a>
 
