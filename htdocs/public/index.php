@@ -164,6 +164,14 @@
                         alert('This service require HTML 5 features to be able to feed you APRS data in real-time. Please upgrade your browser.');
                     }
                 });
+
+                $('#hdr-search-form').bind('submit',function(e) {
+                  var q = $('#hdr-search-form-q').val();
+                  $('#hdr-search-form-q').val('');
+                  var seconds = $('#hdr-search-form-seconds').val();
+                  loadView('/views/search.php?imperialUnits=<?php echo $_GET['imperialUnits'] ?? '0'; ?>&q=' + q + '&seconds=' + seconds);
+                  e.preventDefault();
+                });
             });
         </script>
     </head>
@@ -324,6 +332,13 @@
                   <?php endif; ?>
                 </div>
             </div>
+            <div class="dropdown">
+              <form method="get" id="hdr-search-form" action="">
+                  <input type="hidden" name="seconds" id="hdr-search-form-seconds" value="0" />
+                  <input type="text" style="width: 130px;padding-left:10px;margin-top:8px;margin-left:10px;height:20px;text-transform:uppercase;" id="hdr-search-form-q" autocomplete="off" spellcheck="false" autocorrect="off" name="q" placeholder="Callsign search..." title="Search for a station/vehicle here!">
+                  <input type="submit" value="Go" style="margin-top:8px;line-height:0px;padding-left:6px;padding-right:6px" />
+              </form>
+            </div>
 
             <a class="tdlink" id="svrclock" style="float:right">00:00:00</a>
 
@@ -401,7 +416,7 @@
                               $("#timetravel-date").datepicker({
                                   showOtherMonths: true,
                                   selectOtherMonths: true,
-                                  minDate: -10,
+                                  minDate: -(dbdays),
                                   maxDate: '0',
                                   dateFormat: 'yy-mm-dd'
                                 });

@@ -8,6 +8,7 @@
         $rows = $_GET['rows'] ?? 25;
         $offset = ($page - 1) * $rows;
 
+        $start_time = microtime();
         if (($_GET['category'] ?? 1) == 2) {
             $packets = PacketRepository::getInstance()->getObjectListWithRawBySenderStationId($station->id, $rows, $offset);
             $count = PacketRepository::getInstance()->getNumberOfPacketsWithRawBySenderStationId($station->id);
@@ -15,6 +16,7 @@
             $packets = PacketRepository::getInstance()->getObjectListWithRawByStationId($station->id, $rows, $offset);
             $count = PacketRepository::getInstance()->getNumberOfPacketsWithRawByStationId($station->id);
         }
+        $dbtime = microtime() - $start_time;
 
         $pages = ceil($count / $rows);
     ?>
@@ -33,7 +35,9 @@
         <div class="horizontal-line">&nbsp;</div>
 
         <p>
-            This is the latest recevied packets stored in our database for station/object <?php echo $station->name; ?>. If no packets are shown the sender has not sent any packets the latest 24 hours.
+          <?php if ($count): ?>A total of <?php echo $count ?> recevied packets have been found for station/object <b><?php echo $station->name; ?></b> from the past 24 hours.
+          <?php else: ?>If no packets are shown the station/object has not sent any packets within the past 24 hours.<?php endif; ?>
+          This data took <?php echo round($dbtime, 3) ?> seconds to find in our database.
         </p>
 
         <?php if ($station->sourceId == 5) : ?>
@@ -89,8 +93,7 @@
                         <?php else : ?>
                         <span class="parsepkt">
                         <?php endif; ?>
-
-                            <?php echo str_replace_first(htmlspecialchars($station->name . '>'), '<b>' . htmlspecialchars($station->name) . '</b>&gt;', htmlspecialchars($packet->raw)); ?>
+                            <?php echo str_replace_first(htmlspecialchars($station->name . '>'), htmlspecialchars($station->name) . '&gt;', htmlspecialchars($packet->raw)); ?>
                             <?php if ($packet->mapId == 3) : ?>
                             &nbsp;<b>[Duplicate]</b>
                             <?php elseif ($packet->mapId == 6) : ?>
@@ -125,8 +128,8 @@
                                 <tbody>
                                     <tr>
                                         <td>Raw</td>
-                                        <td>
-                                            <?php echo str_replace_first(htmlspecialchars($station->name . '>'), '<b>' . htmlspecialchars($station->name) . '</b>&gt;', htmlspecialchars($packet->raw)); ?>
+                                        <td class="parsepkt">
+                                            <?php echo str_replace_first(htmlspecialchars($station->name . '>'), htmlspecialchars($station->name) . '&gt;', htmlspecialchars($packet->raw)); ?>
                                         </td>
                                     </tr>
 
