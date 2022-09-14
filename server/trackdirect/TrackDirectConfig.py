@@ -47,6 +47,8 @@ class TrackDirectConfig(Singleton):
             'database', 'days_to_save_weather_data').strip('"'))
         self.daysToSaveTelemetryData = int(configParser.get(
             'database', 'days_to_save_telemetry_data').strip('"'))
+        self.daysToSavePacketData = int(configParser.get(
+            'database', 'days_to_save_packet_data').strip('"'))
 
         self.saveOgnStationsWithMissingIdentity = False
         try:

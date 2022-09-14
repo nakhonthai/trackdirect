@@ -33,6 +33,7 @@ if __name__ == '__main__':
     maxDaysToSaveStationData = int(config.daysToSaveStationData)
     maxDaysToSaveWeatherData = int(config.daysToSaveWeatherData)
     maxDaysToSaveTelemetryData = int(config.daysToSaveTelemetryData)
+    maxDaysToSavePacketData = int(config.daysToSavePacketData)
 
     try:
         fh = logging.handlers.RotatingFileHandler(filename=os.path.expanduser(
@@ -59,6 +60,8 @@ if __name__ == '__main__':
             "Saving weather data for %s days" % (maxDaysToSaveWeatherData))
         trackDirectLogger.info(
             "Saving telemetry data for %s days" % (maxDaysToSaveTelemetryData))
+        trackDirectLogger.info(
+            "Saving packet data for %s days" % (maxDaysToSavePacketData))
 
         trackDirectDb = DatabaseConnection()
         dbNoAutoCommit = trackDirectDb.getConnection(False)
@@ -74,7 +77,7 @@ if __name__ == '__main__':
         #
         # Loop over the latest days and delete packets that is not needed any more
         #
-        for x in range(2, 16):
+        for x in range(maxDaysToSavePacketData, maxDaysToSavePacketData+16):
             prevDay = datetime.date.today() - datetime.timedelta(x)  # today minus x days
             prevDayTimestamp = prevDay.strftime("%s")
             prevDayFormat = datetime.datetime.utcfromtimestamp(
