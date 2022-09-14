@@ -111,7 +111,7 @@ class PacketTelemetryRepository extends ModelRepository
      * @param  int             $maxDays
      * @return array
      */
-    public function getLatestObjectListByStationId($stationId, $limit, $offset, $maxDays = 7)
+    public function getLatestObjectListByStationId($stationId, $limit, $offset, $maxDays = 7, $sort='desc', $startAt=null, $endAt=null)
     {
         if (!isInt($stationId) || !isInt($limit) || !isInt($offset) || !isInt($maxDays)) {
             return [];
@@ -119,9 +119,10 @@ class PacketTelemetryRepository extends ModelRepository
         $latestObject = $this->getLatestObjectByStationId($stationId);
 
         $sqlParameters = Array();
-        $sql = 'select * from packet_telemetry where station_id = ? and timestamp > ?';
+        $sql = 'select * from packet_telemetry where station_id = ? and timestamp > ? and timestamp < ?';
         $sqlParameters[] = $stationId;
-        $sqlParameters[] = (time() - 24*60*60*$maxDays);
+        $sqlParameters[] = $startAt ?? (time() - 24*60*60*$maxDays);
+        $sqlParameters[] = $endAt ?? time();
 
         if ($latestObject->stationTelemetryParamId !== null) {
             $sql .= ' and station_telemetry_param_id = ?';
@@ -151,7 +152,7 @@ class PacketTelemetryRepository extends ModelRepository
             $sql .= ' and station_telemetry_bits_id is null';
         }
 
-        $sql .= ' order by timestamp desc limit ? offset ?';
+        $sql .= ' order by timestamp '.$sort.' limit ? offset ?';
         $sqlParameters[] = $limit;
         $sqlParameters[] = $offset;
 
@@ -167,7 +168,7 @@ class PacketTelemetryRepository extends ModelRepository
      * @param  int             $maxDays
      * @return int
      */
-    public function getLatestNumberOfPacketsByStationId($stationId, $maxDays = 7)
+    public function getLatestNumberOfPacketsByStationId($stationId, $maxDays = 7, $startAt=null, $endAt=null)
     {
         if (!isInt($stationId) || !isInt($maxDays)) {
             return 0;
@@ -175,9 +176,10 @@ class PacketTelemetryRepository extends ModelRepository
         $latestObject = $this->getLatestObjectByStationId($stationId);
 
         $sqlParameters = Array();
-        $sql = 'select count(*) c from packet_telemetry where station_id = ? and timestamp > ?';
+        $sql = 'select count(*) c from packet_telemetry where station_id = ? and timestamp > ? and timestamp < ?';
         $sqlParameters[] = $stationId;
-        $sqlParameters[] = (time() - 24*60*60*$maxDays);
+        $sqlParameters[] = $startAt ?? (time() - 24*60*60*$maxDays);
+        $sqlParameters[] = $endAt ?? time();
 
         if ($latestObject->stationTelemetryParamId !== null) {
             $sql .= ' and station_telemetry_param_id = ?';

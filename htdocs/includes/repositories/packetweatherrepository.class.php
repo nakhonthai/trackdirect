@@ -91,15 +91,18 @@ class PacketWeatherRepository extends ModelRepository
      * @param  int $maxDays
      * @return array
      */
-    public function getLatestObjectListByStationIdAndLimit($stationId, $limit, $offset, $maxDays = 7)
+    public function getLatestObjectListByStationIdAndLimit($stationId, $limit, $offset, $maxDays = 7, $startAt=null, $endAt=null)
     {
         if (!isInt($stationId) || !isInt($limit) || !isInt($offset) || !isInt($maxDays)) {
             return [];
         }
+        $startTime = $startAt ?? (time() - 24*60*60*$maxDays);
+        $endTime = $endAt ?? time();
         return $this->getObjectListFromSql(
             'select * from packet_weather
             where station_id = ?
                 and timestamp > ?
+                and timestamp < ?
                 and (humidity is not null
                     or pressure is not null
                     or rain_1h is not null
@@ -111,7 +114,7 @@ class PacketWeatherRepository extends ModelRepository
                     or wind_speed is not null
                     or luminosity is not null
                     or snow is not null)
-            order by timestamp desc limit ? offset ?', [$stationId, (time() - 24*60*60*$maxDays), $limit, $offset]
+            order by timestamp asc limit ? offset ?', [$stationId, $startTime, $endTime, $limit, $offset]
         );
     }
 
@@ -122,14 +125,17 @@ class PacketWeatherRepository extends ModelRepository
      * @param  int $maxDays
      * @return int
      */
-    public function getLatestNumberOfPacketsByStationIdAndLimit($stationId, $maxDays = 7)
+    public function getLatestNumberOfPacketsByStationIdAndLimit($stationId, $maxDays = 7, $startAt=null, $endAt=null)
     {
         if (!isInt($stationId) || !isInt($maxDays)) {
             return 0;
         }
+        $startTime = $startAt ?? (time() - 24*60*60*$maxDays);
+        $endTime = $endAt ?? time();
         $sql = 'select count(*) c from packet_weather
             where station_id = ?
                 and timestamp > ?
+                and timestamp < ?
                 and (humidity is not null
                     or pressure is not null
                     or rain_1h is not null
@@ -141,7 +147,7 @@ class PacketWeatherRepository extends ModelRepository
                     or wind_speed is not null
                     or luminosity is not null
                     or snow is not null)';
-        $parameters = [$stationId, (time() - 24*60*60*$maxDays)];
+        $parameters = [$stationId, $startTime, $endTime];
 
         $pdo = PDOConnection::getInstance();
         $stmt = $pdo->prepareAndExec($sql, $parameters);

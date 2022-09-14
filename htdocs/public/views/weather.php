@@ -11,19 +11,24 @@
         $graphLabels = array('Time', 'Temperature', 'Humidity', 'Pressure', 'Rain (Last Hour)', 'Rain (Last 24 Hours)', 'Rain (Since Midnight)', 'Wind Speed', 'Wind Direction', 'Luminosity', 'Snow');
         $missingGraphs = [];
 
-        if ($format != 'current') {
+        $start = $_GET['start'] ?? time()-864000;
+        $end = $_GET['end'] ?? time();
+
+        if ($format == 'table') {
+          $start_time = microtime();
           $page = $_GET['page'] ?? 1;
           $rows = $_GET['rows'] ?? 25;
           $offset = ($page - 1) * $rows;
-          $weatherPackets = PacketWeatherRepository::getInstance()->getLatestObjectListByStationIdAndLimit($station->id, $rows, $offset, $maxDays);
-          $count = PacketWeatherRepository::getInstance()->getLatestNumberOfPacketsByStationIdAndLimit($station->id, $maxDays);
+          $weatherPackets = PacketWeatherRepository::getInstance()->getLatestObjectListByStationIdAndLimit($station->id, $rows, $offset, $maxDays, $start, $end);
+          $count = PacketWeatherRepository::getInstance()->getLatestNumberOfPacketsByStationIdAndLimit($station->id, $maxDays, $start, $end);
+          $dbtime = microtime() - $start_time;
         } else {
           $weatherPackets = PacketWeatherRepository::getInstance()->getLatestObjectListByStationIdAndLimit($station->id, 1, 0, $maxDays);
           $count = 1;
         }
         $pages = ceil($count / $rows);
 
-        $titles = array('current' => 'Current Conditions', 'graph' => 'Weather Graphs', 'table' => 'Table View');
+        $titles = array('current' => 'Current Conditions', 'graph' => 'Weather Graphs', 'table' => 'Weather Data');
     ?>
 
     <title><?php echo $station->name; ?> <?php echo $titles[$format]; ?></title>
@@ -34,35 +39,30 @@
             <a class="tdlink" title="Trail Chart" href="/views/trail.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Trail Chart</a>
             <span>Weather</span>
             <a class="tdlink" title="Telemetry" href="/views/telemetry.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Telemetry</a>
-            <a class="tdlink" title="Raw packets" href="/views/raw.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Raw packets</a>
+            <a class="tdlink" title="Raw packets" href="/views/raw.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Raw Packets</a>
+        </div>
+
+        <div class="horizontal-line" style="margin:0">&nbsp;</div>
+
+        <div class="modal-inner-content-menu" style="margin-left:25px;">
+            <?php if ($format != 'current'): ?><a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&format=current"><?php echo $titles['current']; ?></a><?php else: ?><span><?php echo $titles['current']; ?></span><?php endif; ?>
+            <?php if ($format != 'graph'): ?><a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&format=graph"><?php echo $titles['graph']; ?></a><?php else: ?><span><?php echo $titles['graph']; ?></span><?php endif; ?>
+            <?php if ($format != 'table'): ?><a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&format=table"><?php echo $titles['table']; ?></a><?php else: ?><span><?php echo $titles['table']; ?></span><?php endif; ?>
         </div>
 
         <div class="horizontal-line">&nbsp;</div>
 
         <?php if (count($weatherPackets) > 0) : ?>
             <?php if ($format == 'current'): ?><p>Here are the current (last reported) weather conditions for station/object <?php echo $station->name; ?>.  If nothing is displayed, no weather information has been provided within the past <?php echo $maxDays; ?> day(s).</p><?php endif; ?>
-            <?php if ($format != 'current'): ?><p>This is the latest recevied weather packets stored in our database for station/object <?php echo $station->name; ?>. If no packets are shown the sender has not sent any weather packets the latest <?php echo $maxDays; ?> day(s).</p><?php endif; ?>
+            <?php if ($format != 'current'): ?><p>This is the latest recevied weather packets stored in our database for station/object <?php echo $station->name; ?>. If no graphs are shown the sender has not sent any weather packets during the specified time range.</p><?php endif; ?>
 
-            <div class="form-container">
-              <span style="float:right;">
-                [ <?php if ($format != 'current'): ?><a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&format=current"><?php echo $titles['current']; ?></a><?php else: ?><?php echo $titles['current']; ?><?php endif; ?> ]
-                [ <?php if ($format != 'graph'): ?><a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&format=graph"><?php echo $titles['graph']; ?></a><?php else: ?><?php echo $titles['graph']; ?><?php endif; ?> ]
-                [ <?php if ($format != 'table'): ?><a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&format=table"><?php echo $titles['table']; ?></a><?php else: ?><?php echo $titles['table']; ?><?php endif; ?> ]
-              </span>
-
-                <?php if ($format == 'table'): ?>
-                  <select id="weather-rows" style="float:left; margin-right: 5px;" class="pagination-rows">
-                      <option <?php echo ($rows == 25 ? 'selected' : ''); ?> value="25">25 rows</option>
-                      <option <?php echo ($rows == 50 ? 'selected' : ''); ?> value="50">50 rows</option>
-                      <option <?php echo ($rows == 100 ? 'selected' : ''); ?> value="100">100 rows</option>
-                      <option <?php echo ($rows == 200 ? 'selected' : ''); ?> value="200">200 rows</option>
-                      <option <?php echo ($rows == 300 ? 'selected' : ''); ?> value="300">300 rows</option>
-                  </select>
-                <?php else: ?>
-                    <?php if ($format != 'current'): ?>
-                      <span style-="float:left;">Displaying data from <span id="oldest-timestamp" style="font-weight:bold;"></span> to <span id="latest-timestamp" style="font-weight:bold;"></span>.  <span id="records"></span> (max 250)</span>
+            <div style="float:left;line-height: 28px;">
+                    <?php if ($format == 'graph'): ?>
+                      <span style="float:left;">Displaying data from <span id="oldest-timestamp" style="font-weight:bold;"></span> to <span id="latest-timestamp" style="font-weight:bold;"></span>.  <span id="records"></span> (max 1000)</span>
+                    <?php elseif ($format == 'current'): ?>
+                      <span style="float:left;">Displaying current weather conditions as of <span id="latest-timestamp" style="font-weight:bold;"><?php echo ($weatherPackets[0]->wxRawTimestamp != null?$weatherPackets[0]->wxRawTimestamp:$weatherPackets[0]->timestamp); ?></span>.
                     <?php else: ?>
-                      <span style-="float:left;">Displaying current weather conditions as of <span id="latest-timestamp" style="font-weight:bold;"><?php echo ($weatherPackets[0]->wxRawTimestamp != null?$weatherPackets[0]->wxRawTimestamp:$weatherPackets[0]->timestamp); ?></span>.
+                      <span style="float:left;">Displaying <?php echo $offset+1; ?> - <?php echo ($offset+$rows < $count ? $offset+$rows : $count); ?> of <?php echo $count ?> weather records.  Data retrieved in <?php echo round($dbtime, 3) ?> seconds.</span>
                     <?php endif; ?>
                   <script type="text/javascript">
                           $('#oldest-timestamp, #latest-timestamp').each(function() {
@@ -71,16 +71,70 @@
                               }
                           });
                   </script>
-                <?php endif; ?>
+
             </div>
+
+            <?php if ($format != 'current'): ?>
+              <form id="wxhistory-form" style="float:right;line-height: 28px">
+                Show
+                <?php if ($format == 'table'): ?>
+                  <select id="weather-rows" style="" class="pagination-rows">
+                      <option <?php echo ($rows == 25 ? 'selected' : ''); ?> value="25">25 rows</option>
+                      <option <?php echo ($rows == 50 ? 'selected' : ''); ?> value="50">50 rows</option>
+                      <option <?php echo ($rows == 100 ? 'selected' : ''); ?> value="100">100 rows</option>
+                      <option <?php echo ($rows == 200 ? 'selected' : ''); ?> value="200">200 rows</option>
+                      <option <?php echo ($rows == 300 ? 'selected' : ''); ?> value="300">300 rows</option>
+                  </select>
+                <?php else: ?> data <?php endif; ?>
+                  from <input type="text" id="start-date" class="form-control" style="height:.5em;width:9em" readonly />
+                to <input type="text" id="end-date" class="form-control" style="height:.5em;width:9em" readonly />
+                <script>
+                  var dbstartdate = moment("<?php echo getWebsiteConfig('database_start_date') ?>");
+                  var timenow= moment();
+                  var duration = moment.duration(timenow.diff(dbstartdate));
+                  var dbdays = Math.floor(duration.asDays());
+                  $(document).ready(function(){
+                    $("#start-date, #end-date").datepicker({
+                        showOtherMonths: true,
+                        selectOtherMonths: true,
+                        minDate: -(dbdays),
+                        maxDate: '0',
+                        dateFormat: 'yy-mm-dd',
+                        showButtonPanel: true,
+                        onSelect: function(selectedDate, dpObj) {
+                          if (dpObj.id == 'start-date') $("#end-date").datepicker("option", "minDate", selectedDate);
+                          else if (dpObj.id == 'end-date') $("#start-date").datepicker("option", "maxDate", selectedDate);
+                        }
+                    });
+
+                    $("#start-date").datepicker('setDate', new Date(1000 * <?php echo $start; ?>));
+                    $("#end-date").datepicker('setDate', new Date(1000 * <?php echo $end; ?>));
+                  });
+                </script>
+                <input type="submit" value="Go" style="line-height:0px;height:16px;width:3em;padding: 12px 0px;" />
+              </form>
+              <script>
+                $("#wxhistory-form").submit(function(e) {
+                  if ($('#start-date').val() != '0') {
+                    var startat = moment($('#start-date').val(), 'YYYY-MM-DD HH:mm').unix();
+                    var endat = moment($('#end-date').val(), 'YYYY-MM-DD HH:mm').endOf('day').unix();
+                    loadView('weather.php?id=<?php echo $_GET['id'] ;?>&format=<?php echo $_GET['format']; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&start='+startat+'&end='+endat);
+                  }
+                  e.preventDefault();
+                  return false;
+                });
+              </script>
+            <?php endif; ?>
+
+            <div style="clear:both;"></div>
 
             <?php if ($pages > 1 && $format == 'table'): ?>
                 <div class="pagination">
-                  <a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
+                  <a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&format=table&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
                   <?php for($i = max(1, $page - 3); $i <= min($pages, $page + 3); $i++) : ?>
-                  <a href="/views/weather.php?id=<?php echo $station->id; ?>&rows=<?php echo $rows; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
+                  <a href="/views/weather.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&format=table&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
                   <?php endfor; ?>
-                  <a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&rows=<?php echo $rows; ?>&page=<?php echo $pages; ?>">>></a>
+                  <a class="tdlink" href="/views/weather.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&format=table&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $pages; ?>">>></a>
                 </div>
             <?php endif; ?>
 
@@ -375,7 +429,7 @@
                 $(document).ready(function() {
                   for (let i = 1; i < 11; i++) {
                     if (window['chart_'+i] != null) {
-                      $.getJSON('/data/graph.php?id=<?php echo $station->id ?>&type=weather&index=' + i).done(function(response) {
+                      $.getJSON('/data/graph.php?id=<?php echo $station->id ?>&type=weather&start=<?php echo $start; ?>&end=<?php echo $end; ?>&index=' + i).done(function(response) {
                         $('#oldest-timestamp').text(response.oldest_timestamp);
                         $('#latest-timestamp').text(response.latest_timestamp);
                         $('#oldest-timestamp, #latest-timestamp').each(function() {
@@ -567,7 +621,7 @@
             });
 
             $('#weather-rows').change(function () {
-                loadView("/views/weather.php?id=<?php echo $station->id ?>&rows=" + $('#weather-rows').val() + "&page=1");
+                loadView("/views/weather.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&format=table&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=" + $('#weather-rows').val() + "&page=1");
             });
 
             if (window.trackdirect) {

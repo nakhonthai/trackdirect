@@ -8,7 +8,10 @@ if ($station->isExistingObject()) {
     $graphIdx = $_GET['index'] ?? 0;
     $graphType = $_GET['type'] ?? '';
 
-    $maxDays = 10;
+    $startAt = $_GET['start'] ?? time()-864000;
+    $endAt = $_GET['end'] ?? time();
+    $maxDays = $_GET['days'] ?? 10;
+
     if (!isAllowedToShowOlderData()) {
         $maxDays = 1;
     }
@@ -23,7 +26,7 @@ if ($station->isExistingObject()) {
         5 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
       );
 
-      $telemetryPackets = PacketTelemetryRepository::getInstance()->getLatestObjectListByStationId($station->id, 250, 0, $maxDays);
+      $telemetryPackets = PacketTelemetryRepository::getInstance()->getLatestObjectListByStationId($station->id, 1000, 0, $maxDays, 'asc', $startAt, $endAt);
       $latestPacketTelemetry = (count($telemetryPackets) > 0 ? $telemetryPackets[0] : new PacketTelemetry(null));
 
       // Ajax graph data
@@ -33,15 +36,44 @@ if ($station->isExistingObject()) {
         foreach ($telemetryPackets as $packetTelemetry) {
             $response['data'][] = array('x' => ($packetTelemetry->wxRawTimestamp != null ? $packetTelemetry->wxRawTimestamp : $packetTelemetry->timestamp) * 1000, 'y' => ($packetTelemetry->val1 !== null) ? round($packetTelemetry->getValue($graphIdx), 2) : '');
         }
-        $response['latest_timestamp'] = $response['data'][0]['x'] / 1000;
-        $response['oldest_timestamp'] = $response['data'][sizeof($response['data'])-1]['x'] / 1000;
+        $response['oldest_timestamp'] = $response['data'][0]['x'] / 1000;
+        $response['latest_timestamp'] = $response['data'][sizeof($response['data'])-1]['x'] / 1000;
         $response['records'] = sizeof($response['data']);
       }
     }
 
-    if ($graphType == 'weather') {       // No more than 250 rows for graphs
+
+    if ($graphType == 'telemetrybits') {       // No more than 250 rows for graphs
+      $telemetryColors = array(
+        0 => null,
+        1 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
+        2 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
+        3 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
+        4 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7')
+      );
+
+      $telemetryPackets = PacketTelemetryRepository::getInstance()->getLatestObjectListByStationId($station->id, 1000, 0, $maxDays, 'asc', $startAt, $endAt);
+      $latestPacketTelemetry = (count($telemetryPackets) > 0 ? $telemetryPackets[0] : new PacketTelemetry(null));
+
+      // Ajax graph data
+      if ($graphIdx) {
+        $response = array_merge($response, $telemetryColors[$graphIdx]);
+        $response['label'] = $latestPacketTelemetry->getBitParameterName($graphIdx);
+        foreach ($telemetryPackets as $i => $packetTelemetry) {
+          if ($packetTelemetry->bits !== null && $i >= 2 ) {
+            $response['data'][] = array('x' => ($packetTelemetry->wxRawTimestamp != null ? $packetTelemetry->wxRawTimestamp : $packetTelemetry->timestamp) * 1000, 'y' => $packetTelemetry->getBit($graphIdx));
+          }
+        }
+        $response['oldest_timestamp'] = $response['data'][0]['x'] / 1000;
+        $response['latest_timestamp'] = $response['data'][sizeof($response['data'])-1]['x'] / 1000;
+        $response['records'] = sizeof($response['data']);
+      }
+    }
+
+
+    if ($graphType == 'weather') {       // No more than 1000 rows for graphs
       $graphLabels = array('Time', 'Temperature', 'Humidity', 'Pressure', 'Rain (Last Hour)', 'Rain (Last 24 Hours)', 'Rain (Since Midnight)', 'Wind Speed', 'Wind Direction', 'Luminosity', 'Snow');
-      $weatherPackets = PacketWeatherRepository::getInstance()->getLatestObjectListByStationIdAndLimit($station->id, 250, 0, $maxDays);
+      $weatherPackets = PacketWeatherRepository::getInstance()->getLatestObjectListByStationIdAndLimit($station->id, 1000, 0, $maxDays, $startAt, $endAt);
 
       // Ajax graph data
       if ($graphIdx > 0) {
@@ -134,8 +166,8 @@ if ($station->isExistingObject()) {
             $response['backgroundColor'] = '#E0ECF8';
             break;
         }
-        $response['latest_timestamp'] = $response['data'][0]['x'] / 1000;
-        $response['oldest_timestamp'] = $response['data'][sizeof($response['data'])-1]['x'] / 1000;
+        $response['oldest_timestamp'] = $response['data'][0]['x'] / 1000;
+        $response['latest_timestamp'] = $response['data'][sizeof($response['data'])-1]['x'] / 1000;
         $response['records'] = sizeof($response['data']);
       }
     }
