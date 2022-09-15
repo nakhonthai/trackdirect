@@ -61,7 +61,6 @@ class PreviousPacketPolicy():
                 and self.packet.longitude is not None
                 and type(self.packet.latitude) == float
                 and type(self.packet.longitude) == float
-                and self.packet.sourceId != 3
                 and self.packet.mapId in [1, 5, 7, 9]):
             return True
         else:

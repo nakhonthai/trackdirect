@@ -138,6 +138,11 @@ class PacketTableCreator():
                 tablename, tablename)
             cur.execute(sql)
 
+            # Used to locate packets sent TO a station (Call)
+            sql = """create index %s_to_call_idx on %s(to_call)""" % (
+                tablename, tablename)
+            cur.execute(sql)
+
             cur.close()
 
         except (psycopg2.IntegrityError, psycopg2.ProgrammingError) as e:

@@ -308,7 +308,7 @@ class TrackDirectDataCollector():
         Returns:
             Boolean
         """
-        if (packet.sourceId != 3 or packet.stationIdPath):
+        if (packet.sourceId > 5 or packet.stationIdPath):
             # We only add pure duplicates to batch if they have a path, otherwise we are not interested
             return True
         return False

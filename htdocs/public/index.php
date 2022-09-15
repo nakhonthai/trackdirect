@@ -257,6 +257,7 @@
 
                     <a href="javascript:void(0);" onclick="trackdirect.toggleInternetPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide stations that sends packet using TCP/UDP">Hide Internet stations</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleCwopPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide CWOP weather stations">Hide CWOP stations</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.toggleCbAprsPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide CBAPRS stations">Hide CBAPRS stations</a>
                     <!--
                     <a href="javascript:void(0);" onclick="trackdirect.toggleOgflymPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide model airplanes (OGFLYM)">Hide model airplanes (OGFLYM)</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleUnknownPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide unknown aircrafts">Hide unknown aircrafts</a>
@@ -328,6 +329,13 @@
                       class="tdlink"
                       title="CWOP (aprsc) Server Status">
                       CWOP-IS Server Status
+                  </a>
+                  <?php endif; ?>
+                  <?php if (getWebsiteConfig('cbaprs_is_status_url')): ?>
+                  <a href="/views/server_health.php?server=cbaprs"
+                      class="tdlink"
+                      title="CBAPRS (aprsc) Server Status">
+                      CBAPRS-IS Server Status
                   </a>
                   <?php endif; ?>
                 </div>

@@ -131,9 +131,6 @@ class StationRepository(Repository):
         Returns:
             array
         """
-        if (sourceId is not None and sourceId == 3):
-            # If source is "APRS DUPLICATE" we use "APRS"
-            sourceId = 1
 
         if (minTimestamp is None):
             minTimestamp = 0
@@ -176,9 +173,6 @@ class StationRepository(Repository):
         Returns:
             Station
         """
-        if (sourceId == 3):
-            # If source is "APRS DUPLICATE" we use "APRS"
-            sourceId = 1
 
         selectCursor = self.db.cursor()
         if (sourceId is not None):
@@ -291,9 +285,6 @@ class StationRepository(Repository):
         Returns:
             Station
         """
-        if (sourceId == 3):
-            # If source is "APRS DUPLICATE" we use "APRS"
-            sourceId = 1
 
         if (sourceId is not None):
             key = hash(stationName + ';' + str(sourceId))

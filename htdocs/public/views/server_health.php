@@ -28,6 +28,7 @@ $(document).ready(function() {
         <a href="/views/site_statistics.php" class="tdlink" title="Website and server statistics!">Statistics</a>
         <?php if (getWebsiteConfig('aprs_is_status_url') && $server != 'aprs'): ?><a href="/views/server_health.php?server=aprs" class="tdlink" title="APRS Server Health">APRS Server Health</a><?php else: ?><span>APRS Server Health</span><?php endif; ?>
         <?php if (getWebsiteConfig('cwop_is_status_url') && $server != 'cwop'): ?><a href="/views/server_health.php?server=cwop" class="tdlink" title="CWOP Server Health">CWOP Server Health</a><?php else: ?><span>CWOP Server Health</span><?php endif; ?>
+        <?php if (getWebsiteConfig('cbaprs_is_status_url') && $server != 'cbaprs'): ?><a href="/views/server_health.php?server=cbaprs" class="tdlink" title="CBPARS Server Health">CBAPRS Server Health</a><?php else: ?><span>CBAPRS Server Health</span><?php endif; ?>
     </div>
     <div class="horizontal-line">&nbsp;</div>
     This site hosts a dedicated <?php echo strtoupper($server); ?>-IS server. This server status page can be viewed directly with this <a href="<?php echo $status_url; ?>" target=-"_blank">link</a>.

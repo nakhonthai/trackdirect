@@ -29,6 +29,7 @@ create table packet (
      "comment" text null,
      "raw_path" text null,
      "raw" text null,
+     "to_call" text GENERATED ALWAYS AS ("substring"(raw, '::(.*?) :'::text)) STORED,
      primary key (id),
      foreign key(packet_type_id) references packet_type(id),
      foreign key(station_id) references station(id),
@@ -36,7 +37,3 @@ create table packet (
      foreign key(map_id) references map(id),
      foreign key(source_id) references source(id)
 );
-
-
-
-

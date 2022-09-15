@@ -16,7 +16,8 @@
             <a class="tdlink" title="Trail Chart" href="/views/trail.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Trail Chart</a>
             <a class="tdlink" title="Weather" href="/views/weather.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Weather</a>
             <a class="tdlink" title="Telemetry" href="/views/telemetry.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Telemetry</a>
-            <a class="tdlink" title="Raw packets" href="/views/raw.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Raw Packets</a>
+            <a class="tdlink" title="Raw Packets" href="/views/raw.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Raw Packets</a>
+            <a class="tdlink" title="Messages &amp; Bulletins" href="/views/messages.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Messages &amp; Bulletins</a>
         </div>
 
         <div class="horizontal-line">&nbsp;</div>
@@ -390,6 +391,14 @@
                 </div>
             <?php endif; ?>
 
+            <?php $stationLatestBulletinPacket = PacketRepository::getInstance()->getBulletinObjectListByStationId($station->id, 1, 0, 2);?>
+            <?php if ($stationLatestBulletinPacket != null) : ?>
+                <div class="overview-content-divider"></div>
+                <div>
+                    <div class="overview-content-summary-hr">Latest bulletin:</div>
+                    <div class="overview-content-packet-frequency" title="Latest bulletin"><span><?php echo $stationLatestBulletinPacket[0]->to_call; ?>: <?php echo $stationLatestBulletinPacket[0]->comment; ?></span> (<span id="bulletin-timestamp"><?php echo $stationLatestBulletinPacket[0]->timestamp; ?></span>)</div>
+                </div>
+            <?php endif; ?>
 
             <div class="overview-content-divider"></div>
         </div>
@@ -544,7 +553,7 @@
                 }
             });
 
-            $('#latest-timestamp, #comment-timestamp, #status-timestamp, #beacon-timestamp, #position-timestamp, #weather-timestamp, #telemetry-timestamp, .nts').each(function() {
+            $('#latest-timestamp, #comment-timestamp, #status-timestamp, #beacon-timestamp, #position-timestamp, #weather-timestamp, #telemetry-timestamp, #bulletin-timestamp, .nts').each(function() {
                 if ($(this).html().trim() != '' && !isNaN($(this).html().trim())) {
                     $(this).html(moment(new Date(1000 * $(this).html())).format('L LTSZ'));
                 }

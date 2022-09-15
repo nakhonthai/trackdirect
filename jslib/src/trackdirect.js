@@ -802,6 +802,19 @@ var trackdirect = {
   },
 
   /**
+   * Toggle the CBAPRS positions option
+   * @return None
+   */
+  toggleCbAprsPositions: function () {
+    if (this.isCbAprsMarkersVisible()) {
+      this._map.state.isCbAprsMarkersVisible = false;
+    } else {
+      this._map.state.isCbAprsMarkersVisible = true;
+    }
+    this._map.showHideMarkers();
+  },
+
+  /**
    * Toggle the ghost positions option
    * Ghost positions are positions that some filter has removed since it is unlikly
    * @return None
@@ -829,6 +842,14 @@ var trackdirect = {
    */
   isCwopMarkersVisible: function () {
     return this._map.state.isCwopMarkersVisible;
+  },
+
+  /**
+   * Returns true if CBAPRS markers is visible
+   * @return {boolean}
+   */
+  isCbAprsMarkersVisible: function () {
+    return this._map.state.isCbAprsMarkersVisible;
   },
 
   /**

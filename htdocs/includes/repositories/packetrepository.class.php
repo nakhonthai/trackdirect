@@ -58,6 +58,104 @@ class PacketRepository extends ModelRepository
     }
 
     /**
+     * Get message object list by station id and to call sign for the latest $maxDays days
+     *
+     * @param  int $stationId
+     * @param  string $toStationCall - Call sign of the station
+     * @param  int $limit
+     * @param  int $offset
+     * @param  int $maxDays - Optioanl number of days (prior to now) of data to return
+     * @return array
+     */
+    public function getMessageObjectListByStationIdAndCall($stationId, $toStationCall, $limit, $offset=0, $maxDays=7)
+    {
+        if (!isInt($stationId) || !isInt($limit) || !isInt($offset) || !isInt($maxDays) || empty($toStationCall)) {
+            return [];
+        }
+
+        $sql = "select packet.* from packet packet where packet_type_id = 7 and timestamp > ? and ((station_id = ? and to_call NOT LIKE '%BLN%') or to_call = ?) order by timestamp desc, id desc limit ? offset ?";
+        $parameters = [time() - (86400*$maxDays), $stationId, $toStationCall, $limit, $offset];
+        return $this->getObjectListFromSql($sql, $parameters);
+    }
+
+    /**
+     * Get the number of messages by station id and to call sign for the latest $maxDays days
+     *
+     * @param  int $stationId
+     * @param  string $toStationCall - Call sign of the station
+     * @param  int $maxDays - Optioanl number of days (prior to now) of data to return
+     * @return int
+     */
+    public function getNumberOfMessagesByStationIdAndCall($stationId, $toStationCall, $maxDays = 7)
+    {
+        if (!isInt($stationId) || !isInt($maxDays) || empty($toStationCall)) {
+            return 0;
+        }
+
+        $sql = "select count(*) c from packet where packet_type_id = 7 and timestamp > ? and ((station_id = ? and to_call NOT LIKE '%BLN%') or to_call = ?)";
+        $parameters = [time() - (86400*$maxDays), $stationId, $toStationCall];
+
+        $pdo = PDOConnection::getInstance();
+        $stmt = $pdo->prepareAndExec($sql, $parameters);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sum = 0;
+        foreach($rows as $row) {
+            $sum += $row['c'];
+        }
+
+        return $sum;
+    }
+
+    /**
+     * Get bulletin object list by station id for the latest $maxDays days
+     *
+     * @param  int $stationId
+     * @param  int $limit
+     * @param  int $offset
+     * @param  int $maxDays - Optioanl number of days (prior to now) of data to return
+     * @return array
+     */
+    public function getBulletinObjectListByStationId($stationId, $limit, $offset=0, $maxDays = 7)
+    {
+        if (!isInt($stationId) || !isInt($limit) || !isInt($offset) || !isInt($maxDays)) {
+            return [];
+        }
+
+        $sql = "select packet.* from packet packet where station_id = ? and packet_type_id = 7 and timestamp > ? and to_call LIKE '%BLN%' order by timestamp desc, id desc limit ? offset ?";
+        $parameters = [$stationId, time() - (86400*$maxDays), $limit, $offset];
+        return $this->getObjectListFromSql($sql, $parameters);
+    }
+
+    /**
+     * Get object list with raw by station id for the latest $maxDays days
+     *
+     * @param  int $stationId
+     * @param  int $maxDays - Optioanl number of days (prior to now) of data to return
+     * @return int
+     */
+    public function getNumberOfBulletinsByStationId($stationId, $maxDays = 7)
+    {
+        if (!isInt($stationId) || !isInt($maxDays)) {
+            return 0;
+        }
+
+        $sql = "select count(*) c from packet where station_id = ? and packet_type_id = 7 and timestamp > ? and to_call LIKE '%BLN%'";
+        $parameters = [$stationId, time() - (86400*$maxDays)];
+
+        $pdo = PDOConnection::getInstance();
+        $stmt = $pdo->prepareAndExec($sql, $parameters);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sum = 0;
+        foreach($rows as $row) {
+            $sum += $row['c'];
+        }
+
+        return $sum;
+    }
+
+    /**
      * Get number of packets with raw by station id for the latest 24 hours
      *
      * @param  int $stationId

@@ -40,10 +40,6 @@ class PacketDuplicatePolicy():
                     return True
             self._addToCache(packet)
 
-        elif (packet.sourceId == 3):
-            # It is a duplicate (everything from this source is)
-            return True
-
         return False
 
     def _isPacketBodyInCache(self, packet):

@@ -713,6 +713,14 @@ trackdirect.models.Marker.prototype.shouldMarkerBeVisible = function () {
     return false;
   }
 
+  if (
+    this.packet.source_id == 3 &&
+    !this._defaultMap.state.isCbAprsMarkersVisible
+  ) {
+    // CBAPRS weather stations should not be visible
+    return false;
+  }
+
   if (!this._defaultMap.state.isStationaryMarkersVisible) {
     if (!this.isMovingStation()) {
       return false;
