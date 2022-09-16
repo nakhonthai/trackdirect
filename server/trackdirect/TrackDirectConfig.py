@@ -117,7 +117,32 @@ class TrackDirectConfig(Singleton):
             self.websocketAprsHost2 = None
             self.websocketAprsPort2 = None
 
-        if (self.websocketAprsSourceId1 == 5 or self.websocketAprsSourceId2 == 5) :
+        try:
+            self.websocketAprsHost3 = configParser.get(
+                'websocket_server', 'aprs_host3').strip('"')
+            self.websocketAprsPort3 = configParser.get(
+                'websocket_server', 'aprs_port3').strip('"')
+            self.websocketAprsSourceId3 = int(configParser.get(
+                'websocket_server', 'aprs_source_id3').strip('"'))
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            self.websocketAprsSourceId3 = None
+            self.websocketAprsHost3 = None
+            self.websocketAprsPort3 = None
+
+        try:
+            self.websocketAprsHost4 = configParser.get(
+                'websocket_server', 'aprs_host4').strip('"')
+            self.websocketAprsPort4 = configParser.get(
+                'websocket_server', 'aprs_port4').strip('"')
+            self.websocketAprsSourceId4 = int(configParser.get(
+                'websocket_server', 'aprs_source_id4').strip('"'))
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            self.websocketAprsSourceId4 = None
+            self.websocketAprsHost4 = None
+            self.websocketAprsPort4 = None
+
+
+        if (self.websocketAprsSourceId1 == 5 or self.websocketAprsSourceId2 == 5 or self.websocketAprsSourceId3 == 5) :
             # At least one source is of type OGN, disable display of older data
             self.allowTimeTravel = False
             if (self.maxDefaultTime > 1440) :

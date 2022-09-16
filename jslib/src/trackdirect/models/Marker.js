@@ -717,7 +717,15 @@ trackdirect.models.Marker.prototype.shouldMarkerBeVisible = function () {
     this.packet.source_id == 3 &&
     !this._defaultMap.state.isCbAprsMarkersVisible
   ) {
-    // CBAPRS weather stations should not be visible
+    // CBAPRS stations should not be visible
+    return false;
+  }
+
+  if (
+    this.packet.source_id == 5 &&
+    !this._defaultMap.state.isOgnMarkersVisible
+  ) {
+    // OGN stations should not be visible
     return false;
   }
 

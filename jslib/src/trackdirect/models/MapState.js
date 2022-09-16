@@ -17,6 +17,7 @@ trackdirect.models.MapState.prototype._init = function () {
   this.isGhostMarkersVisible = false;
   this.isCwopMarkersVisible = true;
   this.isCbAprsMarkersVisible = true;
+  this.isOgnMarkersVisible = true;
   this.isStationaryMarkersVisible = true;
   this.isInternetMarkersVisible = true;
   this.isUnknownMarkersVisible = true;

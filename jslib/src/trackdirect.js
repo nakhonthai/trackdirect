@@ -815,6 +815,19 @@ var trackdirect = {
   },
 
   /**
+   * Toggle the OGN positions option
+   * @return None
+   */
+  toggleOgnPositions: function () {
+    if (this.isOgnMarkersVisible()) {
+      this._map.state.isOgnMarkersVisible = false;
+    } else {
+      this._map.state.isOgnMarkersVisible = true;
+    }
+    this._map.showHideMarkers();
+  },
+
+  /**
    * Toggle the ghost positions option
    * Ghost positions are positions that some filter has removed since it is unlikly
    * @return None
@@ -850,6 +863,14 @@ var trackdirect = {
    */
   isCbAprsMarkersVisible: function () {
     return this._map.state.isCbAprsMarkersVisible;
+  },
+
+  /**
+   * Returns true if OGN markers are visible
+   * @return {boolean}
+   */
+  isOgnMarkersVisible: function () {
+    return this._map.state.isOgnMarkersVisible;
   },
 
   /**

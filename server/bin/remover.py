@@ -74,6 +74,55 @@ if __name__ == '__main__':
 
         packetRepository = PacketRepository(db)
 
+
+        #
+        # Loop over the latest days and delete OGN-only packets older than 24 hours
+        #
+        for x in range(2, 4):
+            prevDay = datetime.date.today() - datetime.timedelta(x)  # today minus x days
+            prevDayTimestamp = prevDay.strftime("%s")
+            prevDayFormat = datetime.datetime.utcfromtimestamp(
+                int(prevDayTimestamp)).strftime('%Y%m%d')
+            packetTable = "packet" + prevDayFormat
+
+            if (trackDirectDbObjectFinder.checkTableExists(packetTable)):
+                deletedRows = None
+                doFullVacuum = False
+                while (deletedRows is None or deletedRows >= 5000):
+                    sql = """delete from """ + packetTable + """_ogn""" + \
+                        """ where packet_id in (select id from """ + packetTable + \
+                        """ where source_id = 5 limit 5000)"""
+                    cursor.execute(sql)
+                    deletedRows = cursor.rowcount
+                    trackDirectLogger.info(
+                        "Deleted %s from %s" % (deletedRows, packetTable))
+                    if (deletedRows > 0):
+                        doFullVacuum = True
+                    time.sleep(0.5)
+
+                    sql = """delete from """ + packetTable + \
+                        """ where id in (select id from """ + packetTable + \
+                        """ where source_id = 5 limit 5000)"""
+                    cursor.execute(sql)
+                    deletedRows = cursor.rowcount
+                    trackDirectLogger.info(
+                        "Deleted %s from %s" % (deletedRows, packetTable))
+                    if (deletedRows > 0):
+                        doFullVacuum = True
+                    time.sleep(0.5)
+                if (doFullVacuum):
+                    cursor.execute("""VACUUM FULL """ +
+                                   packetTable + """_path""")
+                    cursor.execute("""REINDEX TABLE """ +
+                                   packetTable + """_path""")
+                    cursor.execute("""VACUUM FULL """ +
+                                   packetTable + """_ogn""")
+                    cursor.execute("""REINDEX TABLE """ +
+                                   packetTable + """_ogn""")
+                    cursor.execute("""VACUUM FULL """ + packetTable)
+                    cursor.execute("""REINDEX TABLE """ + packetTable)
+
+
         #
         # Loop over the latest days and delete packets that is not needed any more
         #

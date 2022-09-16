@@ -48,9 +48,9 @@
             <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.min.js" integrity="sha512-TL+GX2RsOUlTndpkgHVnSQ9r6zldqHzfyECrdabkpucdFroZ3/HAhMmP2WYaPjsJCoot+0McmdPOLjmmicG9qg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
             <?php if ($mapapi == 'leaflet-vector'): ?>
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/2.10.0/mapbox-gl.min.css" integrity="sha512-Wrc9YCdBwmoXlSZVGgjLlcda8Iy0bPYwj2u8+/5VEhd3aMOTzu/bfl6ho4ma17rPu1uwjQCOqSNHSUvDg+lRPw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/2.10.0/mapbox-gl.min.js" integrity="sha512-jK6VML53+IVpoRdA+N1EjJHmLKqkMpmcsbJSh1dHTXHKFmASZgRlMMJr2Q9jO9B2MEMF4DT/RDjwdvaFt1+IKw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-leaflet/0.0.15/leaflet-mapbox-gl.min.js" integrity="sha512-ATlsuFAaDjdHIY8OoLY05kPjJrhC4A0vqXxgera5tS3lwx88E+mZWiXRZ1u5xiZphmp1njypxiADydN6//a9Tw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+              <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/1.13.1/mapbox-gl.min.css" />
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/1.13.1/mapbox-gl.min.js"></script>
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-leaflet/0.0.15/leaflet-mapbox-gl.min.js"></script>
             <?php endif; ?>
 
             <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-providers/1.13.0/leaflet-providers.min.js" integrity="sha512-5EYsvqNbFZ8HX60keFbe56Wr0Mq5J1RrA0KdVcfGDhnjnzIRsDrT/S3cxdzpVN2NGxAB9omgqnlh4/06TvWCMw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -257,11 +257,11 @@
 
                     <a href="javascript:void(0);" onclick="trackdirect.toggleInternetPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide stations that sends packet using TCP/UDP">Hide Internet stations</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleCwopPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide CWOP weather stations">Hide CWOP stations</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.toggleOgnPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide OGN stations">Hide OGN stations</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleCbAprsPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide CBAPRS stations">Hide CBAPRS stations</a>
-                    <!--
+
                     <a href="javascript:void(0);" onclick="trackdirect.toggleOgflymPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide model airplanes (OGFLYM)">Hide model airplanes (OGFLYM)</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleUnknownPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide unknown aircrafts">Hide unknown aircrafts</a>
-                    -->
                 </div>
             </div>
 
@@ -330,14 +330,21 @@
                       title="CWOP (aprsc) Server Status">
                       CWOP-IS Server Status
                   </a>
-                  <?php endif; ?>
-                  <?php if (getWebsiteConfig('cbaprs_is_status_url')): ?>
-                  <a href="/views/server_health.php?server=cbaprs"
-                      class="tdlink"
-                      title="CBAPRS (aprsc) Server Status">
-                      CBAPRS-IS Server Status
-                  </a>
-                  <?php endif; ?>
+                <?php endif; ?>
+                <?php if (getWebsiteConfig('ogn_is_status_url')): ?>
+                <a href="/views/server_health.php?server=ogn"
+                    class="tdlink"
+                    title="OGN (aprsc) Server Status">
+                    OGN-IS Server Status
+                </a>
+                <?php endif; ?>
+                <?php if (getWebsiteConfig('cbaprs_is_status_url')): ?>
+                <a href="/views/server_health.php?server=cbaprs"
+                    class="tdlink"
+                    title="CBAPRS (aprsc) Server Status">
+                    CBAPRS-IS Server Status
+                </a>
+                <?php endif; ?>
                 </div>
             </div>
             <div class="dropdown">
@@ -355,7 +362,7 @@
 
         <div id="map-container"></div>
 
-        <div id="footer">Based on <a target="_blank" href="https://www.aprsdirect.com">APRS Track Direct</a></div>
+        <div id="footer">&copy; 2022 <?php echo getWebsiteConfig('owner_name'); ?>.   Based on <a target="_blank" href="https://www.aprsdirect.com">APRS Track Direct</a></div>
 
         <div id="right-container">
             <div id="right-container-info">

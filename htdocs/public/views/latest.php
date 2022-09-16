@@ -19,11 +19,12 @@
     <?php if (count($stations) > 0) : ?>
         <p>
             <span>
-                <form name="filtersource" method="get" action="/views/latest.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&source=<?php echo $source; ?>&page=<?php echo $page ?>" style="float:right;">
+                <form id="filtersource" style="float:right;">
                   Filter by:
-                    <input type="radio" name="source" value="0" <?php if ($source == 0) echo 'checked="checked"'; ?> onclick="document.forms[0].submit()" /> All
-                    <input type="radio" name="source" value="1" <?php if ($source == 1) echo 'checked="checked"'; ?>  onclick="document.forms[0].submit()" /> APRS-IS
-                    <input type="radio" name="source" value="2" <?php if ($source == 2) echo 'checked="checked"'; ?>  onclick="document.forms[0].submit()" /> CWOP
+                    <input type="radio" name="source" value="0" <?php if ($source == 0) echo 'checked="checked"'; ?> /> All
+                    <input type="radio" name="source" value="1" <?php if ($source == 1) echo 'checked="checked"'; ?> /> APRS-IS
+                    <input type="radio" name="source" value="2" <?php if ($source == 2) echo 'checked="checked"'; ?> /> CWOP
+                    <input type="radio" name="source" value="3" <?php if ($source == 3) echo 'checked="checked"'; ?> /> CBAPRS
                 </form>
             </span>
             <?php echo $count; ?> station(s) have been heard in the last 24 hours.
@@ -102,7 +103,9 @@
     $(document).ready(function() {
         var locale = window.navigator.userLanguage || window.navigator.language;
         moment.locale(locale);
-
+        $("input[name='source']").click(function () {
+            loadView('/views/latest.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&source=<?php echo $source; ?>&page=<?php echo $page ?>&source=' + $("input[name='source']:checked").val());
+        });
         $('.station-latest-heard-timestamp').each(function() {
             if ($(this).html().trim() != '' && !isNaN($(this).html().trim())) {
                 $(this).html(moment(new Date(1000 * $(this).html())).format('L LTSZ'));

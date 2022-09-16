@@ -29,6 +29,8 @@ class AprsISReader():
 
         self.aprsISConnection1 = None
         self.aprsISConnection2 = None
+        self.aprsISConnection3 = None
+        self.aprsISConnection4 = None
 
         self.logger = logging.getLogger('trackdirect')
         self.config = TrackDirectConfig()
@@ -51,12 +53,24 @@ class AprsISReader():
             Callback function is expecting to take 2 arguments, the "packet raw" as a string and a "source id" as an integer
         """
         try :
-            if (self.aprsISConnection1 is not None or self.aprsISConnection2 is not None) :
+            if (self.aprsISConnection1 is not None or self.aprsISConnection2 is not None or self.aprsISConnection3 is not None or self.aprsISConnection4 is not None) :
                 def aprsISCallback1(line) :
                     callback(line, self.config.websocketAprsSourceId1)
 
                 def aprsISCallback2(line) :
                     callback(line, self.config.websocketAprsSourceId2)
+
+                def aprsISCallback3(line) :
+                    callback(line, self.config.websocketAprsSourceId3)
+
+                def aprsISCallback4(line) :
+                    callback(line, self.config.websocketAprsSourceId4)
+
+                if (self.aprsISConnection4 is not None) :
+                    self.aprsISConnection4.filteredConsumer(aprsISCallback4, False, True)
+
+                if (self.aprsISConnection3 is not None) :
+                    self.aprsISConnection3.filteredConsumer(aprsISCallback3, False, True)
 
                 if (self.aprsISConnection2 is not None) :
                     self.aprsISConnection2.filteredConsumer(aprsISCallback2, False, True)
@@ -81,10 +95,25 @@ class AprsISReader():
             self.latestRealTimeFilter = None
             self.aprsISConnection2.set_filter('')
 
+        if (self.aprsISConnection3 is not None) :
+            self.latestRealTimeFilter = None
+            self.aprsISConnection3.set_filter('')
+
+        if (self.aprsISConnection4 is not None) :
+            self.latestRealTimeFilter = None
+            self.aprsISConnection4.set_filter('')
 
     def stop(self):
         """Kill the connections to the APRS-IS servers
         """
+        if (self.aprsISConnection4 is not None) :
+            self.aprsISConnection4.close()
+            self.aprsISConnection4 = None
+
+        if (self.aprsISConnection3 is not None) :
+            self.aprsISConnection3.close()
+            self.aprsISConnection3 = None
+
         if (self.aprsISConnection2 is not None) :
             self.aprsISConnection2.close()
             self.aprsISConnection2 = None
@@ -102,17 +131,31 @@ class AprsISReader():
         """
         counter1 = 0
         counter2 = 0
+        counter3 = 0
+        counter4 = 0
+
+        if (self.aprsISConnection4 is not None) :
+            for line in self.aprsISConnection4._socket_readlines(False):
+                counter4 += 1
+                if (limit is not None and counter4 >= limit) :
+                    break
+
+        if (self.aprsISConnection3 is not None) :
+            for line in self.aprsISConnection3._socket_readlines(False):
+                counter3 += 1
+                if (limit is not None and counter3 >= limit) :
+                    break
         if (self.aprsISConnection2 is not None) :
+            for line in self.aprsISConnection2._socket_readlines(False):
+                counter2 += 1
+                if (limit is not None and counter2 >= limit) :
+                    break
+        if (self.aprsISConnection1 is not None) :
             for line in self.aprsISConnection1._socket_readlines(False):
                 counter1 += 1
                 if (limit is not None and counter1 >= limit) :
                     break
-        if (self.aprsISConnection1 is not None) :
-            for line in self.aprsISConnection1._socket_readlines(False):
-                counter2 += 1
-                if (limit is not None and counter2 >= limit) :
-                    break
-        return counter1 + counter2
+        return counter1 + counter2 + counter3 + counter4
 
 
     def _connect(self):
@@ -142,6 +185,30 @@ class AprsISReader():
                 except Exception as e:
                     self.logger.error(e, exc_info=1)
 
+        if (self.aprsISConnection3 is None) :
+            self.latestRealTimeFilter = None
+            # Avoid using a verified user since server will not accept two verfied users with same name
+            if (self.config.websocketAprsHost3 is not None) :
+                try:
+                    self.aprsISConnection3 = AprsISConnection("NOCALL", "-1", self.config.websocketAprsHost3, self.config.websocketAprsPort3)
+                    if (self.config.websocketFrequencyLimit != 0) :
+                        self.aprsISConnection3.setFrequencyLimit(self.config.websocketFrequencyLimit)
+                    self.aprsISConnection3.connect()
+                except Exception as e:
+                    self.logger.error(e, exc_info=1)
+
+        if (self.aprsISConnection4 is None) :
+            self.latestRealTimeFilter = None
+            # Avoid using a verified user since server will not accept two verfied users with same name
+            if (self.config.websocketAprsHost4 is not None) :
+                try:
+                    self.aprsISConnection4 = AprsISConnection("NOCALL", "-1", self.config.websocketAprsHost4, self.config.websocketAprsPort4)
+                    if (self.config.websocketFrequencyLimit != 0) :
+                        self.aprsISConnection4.setFrequencyLimit(self.config.websocketFrequencyLimit)
+                    self.aprsISConnection4.connect()
+                except Exception as e:
+                    self.logger.error(e, exc_info=1)
+
 
     def _modifyFilter(self) :
         """Set a new filter for the APRS-IS connections according to the latest requested map bounds
@@ -160,6 +227,12 @@ class AprsISReader():
 
         if (self.aprsISConnection2 is not None) :
             self.aprsISConnection2.set_filter(newFilter)
+
+        if (self.aprsISConnection3 is not None) :
+            self.aprsISConnection3.set_filter(newFilter)
+
+        if (self.aprsISConnection4 is not None) :
+            self.aprsISConnection4.set_filter(newFilter)
 
 
     def _getNewFilter(self) :

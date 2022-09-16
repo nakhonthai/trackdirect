@@ -114,7 +114,7 @@ class PacketWeatherRepository extends ModelRepository
                     or wind_speed is not null
                     or luminosity is not null
                     or snow is not null)
-            order by timestamp asc limit ? offset ?', [$stationId, $startTime, $endTime, $limit, $offset]
+            order by timestamp ' . ($startAt == null ? 'desc' : 'asc') . ' limit ? offset ?', [$stationId, $startTime, $endTime, $limit, $offset]
         );
     }
 

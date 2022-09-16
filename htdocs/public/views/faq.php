@@ -8,6 +8,7 @@
         <a href="/views/site_statistics.php" class="tdlink" title="Website and server statistics!">Statistics</a>
         <?php if (getWebsiteConfig('aprs_is_status_url')): ?><a href="/views/server_health.php?server=aprs" class="tdlink" title="APRS Server Health">APRS Server Health</a><?php endif; ?>
         <?php if (getWebsiteConfig('cwop_is_status_url')): ?><a href="/views/server_health.php?server=cwop" class="tdlink" title="CWOP Server Health">CWOP Server Health</a><?php endif; ?>
+        <?php if (getWebsiteConfig('ogn_is_status_url') && $server != 'ogn'): ?><a href="/views/server_health.php?server=ogn" class="tdlink" title="OGN Server Health">OGN Server Health</a><?php else: ?><span>OGN Server Health</span><?php endif; ?>
         <?php if (getWebsiteConfig('cbaprs_is_status_url') && $server != 'cbaprs'): ?><a href="/views/server_health.php?server=cbaprs" class="tdlink" title="CBPARS Server Health">CBAPRS Server Health</a><?php else: ?><span>CBAPRS Server Health</span><?php endif; ?>
     </div>
     <div class="horizontal-line">&nbsp;</div>
@@ -111,19 +112,25 @@
     <ul>
         <li>
             To link to a station tracking map view, use one of the following alternatives:
-            <br/><span style="color:darkblue;">https://www.thiswebsite.com?sname=<b>STATION-NAME</b></span>
-            <br/><span style="color:darkblue;">https://www.thiswebsite.com?sid=<b>STATION-ID</b></span>
+            <br/><span style="color:darkblue;"><?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>?sname=<b>STATION-NAME</b></span>
+            <br/><span style="color:darkblue;"><?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>?sid=<b>STATION-ID</b></span>
+        </li>
+        <br/>
+        <li>
+            To link to a station overview (details view), use one of the following alternatives:
+            <br/><span style="color:darkblue;"><?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>/views/overview.php?c=<b>STATION-NAME</b></span>
+            <br/><span style="color:darkblue;"><?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>/views/overview.php?id=<b>STATION-ID</b></span>
         </li>
         <br/>
         <li>
             To link to a tracking map view for multiple stations, use one of the following alternatives:
-            <br/><span style="color:darkblue;">https://www.thiswebsite.com?snamelist=<b>STATION-NAME-1,STATION-NAME-2,STATION-NAME-3</b></span>
-            <br/><span style="color:darkblue;">https://www.thiswebsite.com?sidlist=<b>STATION-ID-1,STATION-ID-2,STATION-ID-3</b></span>
+            <br/><span style="color:darkblue;"><?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>?snamelist=<b>STATION-NAME-1,STATION-NAME-2,STATION-NAME-3</b></span>
+            <br/><span style="color:darkblue;"><?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>?sidlist=<b>STATION-ID-1,STATION-ID-2,STATION-ID-3</b></span>
         </li>
         <br/>
         <li>
             To link to a map view, centered on a position, use the following:
-            <br/><span style="color:darkblue;">https://www.thiswebsite.com?center=<b>LATITUDE</b>,<b>LONGITUDE</b>&zoom=<b>ZOOM-LEVEL</b></span>
+            <br/><span style="color:darkblue;"><?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>?center=<b>LATITUDE</b>,<b>LONGITUDE</b>&zoom=<b>ZOOM-LEVEL</b></span>
         </li>
 
     </ul>
