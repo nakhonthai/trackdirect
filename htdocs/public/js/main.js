@@ -133,7 +133,7 @@ jQuery(document).ready(function ($) {
       $("#right-container-filtered").hide();
 
       // Time travel is stopped when filtering is stopped
-      $("#right-container-timetravel").hide();
+      //$("#right-container-timetravel").hide();
 
       // Reset tail length to default when filtering is stopped
       $("#tdTopnavTimelength>a").removeClass("dropdown-content-checkbox-active");

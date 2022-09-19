@@ -376,6 +376,7 @@
             </div>
 
             <div id="right-container-timetravel">
+                <img src="/images/clock.png" />Time Travel Active
                 <div id="right-container-timetravel-content"></div>
                 <a href="#" onclick="trackdirect.setTimeTravelTimestamp(0); $('#right-container-timetravel').hide(); return false;">reset</a>
             </div>
@@ -472,7 +473,7 @@
                                         trackdirect.setTimeLength(60, false);
                                         var ts = moment($('#timetravel-date').val() + ' ' + $('#timetravel-time').val(), 'YYYY-MM-DD HH:mm').unix();
                                         trackdirect.setTimeTravelTimestamp(ts);
-                                        $('#right-container-timetravel-content').html('Time travel to ' + $('#timetravel-date').val() + ' ' + $('#timetravel-time').val());
+                                        $('#right-container-timetravel-content').html('Showing ' + $('#timetravel-date').val() + ' ' + $('#timetravel-time').val());
                                         $('#right-container-timetravel').show();
                                     } else {
                                         trackdirect.setTimeTravelTimestamp(0, true);

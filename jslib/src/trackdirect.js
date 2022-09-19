@@ -2385,19 +2385,19 @@ var trackdirect = {
    */
   _deactivateFiltered: function (sendNewRequest) {
     // Reset Time travel
-    this.setTimeTravelTimestamp(null);
+    //this.setTimeTravelTimestamp(null);
 
     // clear everything
     this._map.resetAllMarkers();
 
     if (this._map.state.openInfoWindow !== null) {
-      this._map.state.openInfoWindow.hide();
+      //this._map.state.openInfoWindow.hide();
     }
     this._map.deactivateFilteredMode();
 
     // If we was tracking one station that we was filtering on, stop tracking it
     this.stopTrackStation();
-    this.setTimeLength(this.settings.defaultTimeLength, false);
+    //this.setTimeLength(this.settings.defaultTimeLength, false);
 
     this._emitEventListeners("filter-changed", []);
     this._emitEventListeners("filter-stopped");

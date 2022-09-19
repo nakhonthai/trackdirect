@@ -379,6 +379,15 @@ input[type=submit]:hover {
   display: none;
 }
 
+#right-container-timetravel-content {
+  clear: both;
+}
+
+#right-container-timetravel img {
+  width:16px;
+  float:left;
+}
+
 .modal-inner-content {
   max-width: 1100px;
 
