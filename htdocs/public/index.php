@@ -169,7 +169,7 @@
                   var q = $('#hdr-search-form-q').val();
                   $('#hdr-search-form-q').val('');
                   var seconds = $('#hdr-search-form-seconds').val();
-                  loadView('/views/search.php?imperialUnits=<?php echo $_GET['imperialUnits'] ?? '0'; ?>&q=' + q + '&seconds=' + seconds);
+                  loadView('/views/search.php?imperialUnits=<?php echo (isImperialUnitUser() ? 1 : 0 ); ?>&q=' + q + '&seconds=' + seconds);
                   e.preventDefault();
                 });
             });

@@ -49,7 +49,11 @@ if ($station->isExistingObject()) {
         1 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
         2 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
         3 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
-        4 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7')
+        4 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
+        5 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
+        6 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
+        7 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7'),
+        8 => array('borderColor' => '#2E2EFE', 'backgroundColor' => '#81BEF7')
       );
 
       $telemetryPackets = PacketTelemetryRepository::getInstance()->getLatestObjectListByStationId($station->id, 1000, 0, $maxDays, 'asc', $startAt, $endAt);

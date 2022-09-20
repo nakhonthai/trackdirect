@@ -16,18 +16,19 @@
         $rows = $_GET['rows'] ?? 25;
         $offset = ($page - 1) * $rows;
 
-        $start_time = microtime();
+        $start_time = microtime(true);
         if ($format == 'table') {
           $telemetryPackets = PacketTelemetryRepository::getInstance()->getLatestObjectListByStationId($station->id, $rows, $offset, $maxDays, 'asc', $start, $end);
           $latestPacketTelemetry = (count($telemetryPackets) > 0 ? $telemetryPackets[0] : new PacketTelemetry(null));
           $count = PacketTelemetryRepository::getInstance()->getLatestNumberOfPacketsByStationId($station->id, $maxDays, $start, $end);
+          $pages = ceil($count / $rows);
         } else {
           $telemetryPackets = PacketTelemetryRepository::getInstance()->getLatestObjectListByStationId($station->id, 1, 0, $maxDays);
           $latestPacketTelemetry = (count($telemetryPackets) > 0 ? $telemetryPackets[0] : new PacketTelemetry(null));
           $count = 1;
+          $pages = 0;
         }
-        $dbtime = microtime() - $start_time;
-        $pages = ceil($count / $rows);
+        $dbtime = microtime(true) - $start_time;
 
         $titles = array('current' => 'Current Readings', 'graph' => 'Telemetry Graphs', 'table' => 'Telemetry Data');
     ?>
@@ -238,11 +239,11 @@
 
             <?php if ($pages > 1 && $format == 'table'): ?>
                 <div class="pagination">
-                  <a class="tdlink" href="/views/telemetry.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&format=<?php echo $format; ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
+                  <a class="tdlink" href="/views/telemetry.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&format=<?php echo $format; ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
                   <?php for($i = max(1, $page - 3); $i <= min($pages, $page + 3); $i++) : ?>
-                  <a href="/views/telemetry.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&format=<?php echo $format; ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
+                  <a href="/views/telemetry.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&format=<?php echo $format; ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
                   <?php endfor; ?>
-                  <a class="tdlink" href="/views/telemetry.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&format=<?php echo $format; ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $pages; ?>">>></a>
+                  <a class="tdlink" href="/views/telemetry.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&format=<?php echo $format; ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $pages; ?>">>></a>
                 </div>
             <?php endif; ?>
 

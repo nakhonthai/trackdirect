@@ -44,11 +44,11 @@
 
         <?php if ($pages > 1): ?>
             <div class="pagination">
-              <a class="tdlink" href="/search.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&page=1"><<</a>
+              <a class="tdlink" href="/search.php?q=<?php echo ($_GET['q'] ?? "") ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&seconds=<?php echo $seconds ?>&page=1"><<</a>
               <?php for($i = max(1, $page - 3); $i <= min($pages, $page + 3); $i++) : ?>
-              <a href="/search.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
+              <a href="/search.php?q=<?php echo ($_GET['q'] ?? "") ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&seconds=<?php echo $seconds ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
               <?php endfor; ?>
-              <a class="tdlink" href="/search.php?q=<?php echo ($_GET['q'] ?? "") ?>&seconds=<?php echo $seconds ?>&page=<?php echo $pages; ?>">>></a>
+              <a class="tdlink" href="/search.php?q=<?php echo ($_GET['q'] ?? "") ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&seconds=<?php echo $seconds ?>&page=<?php echo $pages; ?>">>></a>
             </div>
         <?php endif; ?>
 

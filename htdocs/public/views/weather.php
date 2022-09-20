@@ -15,18 +15,20 @@
         $end = $_GET['end'] ?? time();
 
         if ($format == 'table') {
-          $start_time = microtime();
+          $start_time = microtime(true);
           $page = $_GET['page'] ?? 1;
           $rows = $_GET['rows'] ?? 25;
           $offset = ($page - 1) * $rows;
           $weatherPackets = PacketWeatherRepository::getInstance()->getLatestObjectListByStationIdAndLimit($station->id, $rows, $offset, $maxDays, $start, $end);
           $count = PacketWeatherRepository::getInstance()->getLatestNumberOfPacketsByStationIdAndLimit($station->id, $maxDays, $start, $end);
-          $dbtime = microtime() - $start_time;
+          $dbtime = microtime(true) - $start_time;
+          $pages = ceil($count / $rows);
         } else {
           $weatherPackets = PacketWeatherRepository::getInstance()->getLatestObjectListByStationIdAndLimit($station->id, 1, 0, $maxDays);
           $count = 1;
+          $pages = 0;
         }
-        $pages = ceil($count / $rows);
+
 
         $titles = array('current' => 'Current Conditions', 'graph' => 'Weather Graphs', 'table' => 'Weather Data');
     ?>

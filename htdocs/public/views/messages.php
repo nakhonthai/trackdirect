@@ -14,7 +14,7 @@
         $offset = ($page - 1) * $rows;
         $show = $_GET['show'] ?? 'message';
 
-        $start_time = microtime();
+        $start_time = microtime(true);
         if ($show == 'message') {
           $packets = PacketRepository::getInstance()->getMessageObjectListByStationIdAndCall($station->id, $station->name, $rows, $offset, $maxDays);
           $count = PacketRepository::getInstance()->getNumberOfMessagesByStationIdAndCall($station->id, $station->name, $maxDays);
@@ -22,7 +22,7 @@
           $packets = PacketRepository::getInstance()->getBulletinObjectListByStationId($station->id, $rows, $offset, $maxDays);
           $count = PacketRepository::getInstance()->getNumberOfBulletinsByStationId($station->id, $maxDays);
         }
-        $dbtime = microtime() - $start_time;
+        $dbtime = microtime(true) - $start_time;
 
         $pages = ceil($count / $rows);
         $titles = array('message' => 'Messages', 'bulletin' => 'Bulletins');
