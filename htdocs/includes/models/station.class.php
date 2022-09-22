@@ -214,7 +214,7 @@ class Station extends Model
             $scaleStrValue = '-scale' . $scaleWidth . 'x' . $scaleHeight;
         }
 
-        return '/symbols/symbol-' . $symbolAsciiValue . '-' . $symbolTableAsciiValue . $scaleStrValue . '.png';
+        return '/symbols/symbol-' . $symbolAsciiValue . '-' . $symbolTableAsciiValue . $scaleStrValue . '.svg';
     }
 
     /**
@@ -246,7 +246,7 @@ class Station extends Model
 
                     $symbolAsciiValue = ord(substr($record['symbol'], 0, 1));
                     $symbolTableAsciiValue = ord(substr($record['symbol_table'], 0, 1));
-                    $result[$key] = '/symbols/symbol-' . $symbolAsciiValue . '-' . $symbolTableAsciiValue . $scaleStrValue . '.png';
+                    $result[$key] = '/symbols/symbol-' . $symbolAsciiValue . '-' . $symbolTableAsciiValue . $scaleStrValue . '.svg';
                 }
             }
         }

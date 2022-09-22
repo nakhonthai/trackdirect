@@ -8,7 +8,27 @@ jQuery(document).ready(function ($) {
       $("#td-modal-title").text(title);
     }
   }
+
+  $('#hdr-search-form').bind('submit',function(e) {
+    var q = $('#hdr-search-form-q').val();
+    $('#hdr-search-form-q').val('');
+    var seconds = $('#hdr-search-form-seconds').val();
+    loadView('/views/search.php?imperialUnits=' + (trackdirect.isImperialUnits() ? 1 : 0 ) + '&q=' + q + '&seconds=' + seconds);
+    e.preventDefault();
+  });
+
+  const curtime = moment();
+  var duration = moment.duration(curtime.diff(dbstart));
+  var dbdays = Math.floor(duration.asDays());
+  $("#timetravel-date").datepicker({
+     showOtherMonths: true,
+     selectOtherMonths: true,
+     minDate: -(dbdays),
+     maxDate: '0',
+     dateFormat: 'yy-mm-dd'
+  });
 });
+
 
 // Init local time presentation
 jQuery(document).ready(function ($) {

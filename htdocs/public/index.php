@@ -13,7 +13,7 @@
 
         <!-- JS libs used by this website (not a dependency for the track direct js lib) -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.5/mobile-detect.min.js" integrity="sha512-1vJtouuOb2tPm+Jh7EnT2VeiCoWv0d7UQ8SGl/2CoOU+bkxhxSX4gDjmdjmbX4OjbsbCBN+Gytj4RGrjV3BLkQ==" crossorigin="anonymous"></script>
-        <script type="text/javascript" src="//www.gstatic.com/charts/loader.js"></script>
+        <script async type="text/javascript" src="//www.gstatic.com/charts/loader.js"></script>
 
         <!-- Stylesheets used by this website (not a dependency for the track direct js lib) -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -29,8 +29,8 @@
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
         <!-- Graphing dependencies -->
-        <script async src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script async src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-moment/1.0.0/chartjs-adapter-moment.min.js" integrity="sha512-oh5t+CdSBsaVVAvxcZKy3XJdP7ZbYUBSRCXDTVn0ODewMDDNnELsrG9eDm8rVZAQg7RsDD/8K3MjPAFB13o6eA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-moment/1.0.0/chartjs-adapter-moment.min.js" integrity="sha512-oh5t+CdSBsaVVAvxcZKy3XJdP7ZbYUBSRCXDTVn0ODewMDDNnELsrG9eDm8rVZAQg7RsDD/8K3MjPAFB13o6eA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
         <!-- Map api javascripts and related dependencies -->
         <?php $mapapi = $_GET['mapapi'] ?? 'leaflet'; ?>
@@ -61,11 +61,12 @@
         <!-- Track Direct jslib -->
         <script type="text/javascript" src="/js/trackdirect.min.js"></script>
 
-
         <script type="text/javascript" src="/js/main.js"></script>
         <link rel="stylesheet" href="/css/main.css">
 
         <script>
+            const dbstart = moment("<?php echo getWebsiteConfig('database_start_date') ?>");
+
             // Start everything!!!
             $(document).ready(function() {
                 google.charts.load('current', {'packages':['corechart', 'timeline']});
@@ -144,7 +145,7 @@
                     options['host'] = "<?php echo $_SERVER['HTTP_HOST']; ?>";
 
                     var supportsWebSockets = 'WebSocket' in window || 'MozWebSocket' in window;
-		    if (supportsWebSockets) {
+		                if (supportsWebSockets) {
                        <?php if (getWebsiteConfig('websocket_url') != null) : ?>
                            var wsServerUrl = "<?php echo getWebsiteConfig('websocket_url'); ?>";
                         <?php else : ?>
@@ -154,7 +155,6 @@
 
                         trackdirect.init(wsServerUrl, mapElementId, options);
 
-                        var me = trackdirect;
                        trackdirect.addListener("trackdirect-init-done", function () {
                          trackdirect._websocket.addListener("server-timestamp-response", function (data) {
                            $('#svrclock').text(moment(new Date(1000 * data.timestamp)).format('LTS'));
@@ -163,15 +163,10 @@
                     } else {
                         alert('This service require HTML 5 features to be able to feed you APRS data in real-time. Please upgrade your browser.');
                     }
+
                 });
 
-                $('#hdr-search-form').bind('submit',function(e) {
-                  var q = $('#hdr-search-form-q').val();
-                  $('#hdr-search-form-q').val('');
-                  var seconds = $('#hdr-search-form-seconds').val();
-                  loadView('/views/search.php?imperialUnits=<?php echo (isImperialUnitUser() ? 1 : 0 ); ?>&q=' + q + '&seconds=' + seconds);
-                  e.preventDefault();
-                });
+
             });
         </script>
     </head>
@@ -383,6 +378,8 @@
         </div>
 
         <div id="td-modal" class="modal">
+            <?php $view = getView($_GET['view']); ?>
+            <?php if (!$view): ?><script>document.getElementById('td-modal').style.display = 'none';</script><?php endif; ?>
             <div class="modal-long-content">
                 <div class="modal-content-header">
                     <span class="modal-close" id="td-modal-close">&times;</span>
@@ -390,12 +387,13 @@
                 </div>
                 <div class="modal-content-body">
                     <div id="td-modal-content">
-                        <?php $view = getView($_GET['view']); ?>
                         <?php if ($view) : ?>
                             <?php include($view); ?>
-			<?php else: ?>
+			                  <?php else: ?>
                             <div id="td-modal-content-nojs">
+                              <noscript>
                                 <?php include(ROOT . '/public/views/about.php'); ?>
+                              </noscript>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -423,21 +421,6 @@
 
                         <form id="timetravel-form">
                            <input type="text" id="timetravel-date" class="form-control" placeholder="Select a start date" readonly>
-                           <script>
-                            const dbstart = moment("<?php echo getWebsiteConfig('database_start_date') ?>");
-                            const curtime = moment();
-                            var duration = moment.duration(curtime.diff(dbstart));
-                            var dbdays = Math.floor(duration.asDays());
-                            $(document).ready(function(){
-                              $("#timetravel-date").datepicker({
-                                  showOtherMonths: true,
-                                  selectOtherMonths: true,
-                                  minDate: -(dbdays),
-                                  maxDate: '0',
-                                  dateFormat: 'yy-mm-dd'
-                                });
-                            });
-                            </script>
 
                             <select id="timetravel-time" class="form-control" style="height:38px;">
                                 <option value="0" selected>Select time</option>

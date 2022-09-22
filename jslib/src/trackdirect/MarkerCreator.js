@@ -406,7 +406,7 @@ trackdirect.MarkerCreator.prototype._getDotMarkerIcon = function (packet) {
         trackdirect.settings.imagesBaseDir +
         "dotColor" +
         colorId +
-        ".png",
+        ".svg",
       size: new google.maps.Size(12, 12),
       origin: new google.maps.Point(0, 0),
       anchor: new google.maps.Point(6, 6),
@@ -418,7 +418,7 @@ trackdirect.MarkerCreator.prototype._getDotMarkerIcon = function (packet) {
         trackdirect.settings.imagesBaseDir +
         "dotColor" +
         colorId +
-        ".png",
+        ".svg",
       iconSize: [12, 12],
       iconAnchor: [6, 6],
       popupAnchor: [-3, -12],

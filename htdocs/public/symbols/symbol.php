@@ -454,6 +454,39 @@ if (isset($_GET['format']) && $_GET['format'] == 'png') {
 
     $im->destroy();
 
+} else if (isset($_GET['format']) && $_GET['format'] == 'webp') {
+    str_replace('#000000', '#010101', $svgContent);
+
+    $im = new Imagick();
+
+    // Hack to set needed density to get correct size?!
+    if ($width !== null && $height !== null) {
+        $im->setResolution($width*4,$height*4);
+    } else {
+        $im->setResolution(96,96);
+    }
+
+    $im->setBackgroundColor(new ImagickPixel('transparent'));
+    $im->readImageBlob($svgContent);
+    $im->setImageFormat("webp");
+    $im->setOption('webp:method', '6');
+    $im->setOption('webp:lossless', 'true');
+
+    if ((!isset($scaleWidth) && !isset($scaleHeight)) || ($scaleWidth == null && $scaleHeight == null)
+            || ($scaleWidth == 24 && $scaleHeight == 24)
+            || ($scaleWidth == 64 && $scaleHeight == 64)
+            || ($scaleWidth == 150 && $scaleHeight == 150)) {
+        $im->writeImage('./' . basename($_SERVER['REQUEST_URI']));
+    }
+
+    header('Pragma: public');
+    header('Cache-Control: max-age=86400, public');
+    header('Expires: '. gmdate('D, d M Y H:i:s \G\M\T', time() + 86400));
+    header('Content-type: image/png');
+    echo $im->getImageBlob();
+
+    $im->destroy();
+
 } else {
 
     header('Pragma: public');

@@ -76,7 +76,7 @@ trackdirect.models.TransmitAnimation.prototype._getIcon = function (index) {
         trackdirect.settings.imagesBaseDir +
         "transmit" +
         index +
-        ".png",
+        ".svg",
       size: new google.maps.Size(60, 60),
       origin: new google.maps.Point(0, 0),
       anchor: new google.maps.Point(30, 30),
@@ -88,7 +88,7 @@ trackdirect.models.TransmitAnimation.prototype._getIcon = function (index) {
         trackdirect.settings.imagesBaseDir +
         "transmit" +
         index +
-        ".png",
+        ".svg",
       iconSize: [60, 60],
       iconAnchor: [30, 30],
     });

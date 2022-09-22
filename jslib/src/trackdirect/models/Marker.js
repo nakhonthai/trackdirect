@@ -989,7 +989,7 @@ trackdirect.models.Marker.prototype._getGoogleMarkerOptions = function () {
       trackdirect.settings.imagesBaseDir +
       "dotColor" +
       colorId +
-      ".png";
+      ".svg";
     var scaledImageSize = new google.maps.Size(12, 12);
     var imageSize = new google.maps.Size(12, 12);
     var imageAnchor = new google.maps.Point(6, 6);
@@ -1068,7 +1068,7 @@ trackdirect.models.Marker.prototype._getLeafletMarkerOptions = function () {
       trackdirect.settings.imagesBaseDir +
       "dotColor" +
       colorId +
-      ".png";
+      ".svg";
     var icon = L.icon({
       iconUrl: iconUrl,
       iconSize: [12, 12],

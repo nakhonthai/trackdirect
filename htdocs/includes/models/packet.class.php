@@ -31,7 +31,7 @@ class Packet extends Model
             $scaleStrValue = '-scale' . $scaleWidth . 'x' . $scaleHeight;
         }
 
-        return '/symbols/symbol-' . $symbolAsciiValue . '-' . $symbolTableAsciiValue . $scaleStrValue . '.png';
+        return '/symbols/symbol-' . $symbolAsciiValue . '-' . $symbolTableAsciiValue . $scaleStrValue . '.svg';
     }
 
     /**
