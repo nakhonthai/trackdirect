@@ -144,42 +144,6 @@
             <!-- Current (last reported) weather conditions) -->
             <?php if ($format == 'current'): ?>
               <script async src="//cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
-              <?php function gaugeParams() { ?>
-                data-width="220"
-                data-height="220"
-                data-ticks-angle="225"
-                data-start-angle="67.5"
-                data-color-major-ticks="#ddd"
-                data-color-minor-ticks="#ddd"
-                data-color-title="#eee"
-                data-color-units="#ccc"
-                data-color-numbers="#eee"
-                data-color-plate="#222"
-                data-border-shadow-width="0"
-                data-borders="true"
-                data-needle-type="arrow"
-                data-needle-width="2"
-                data-needle-circle-size="7"
-                data-needle-circle-outer="true"
-                data-needle-circle-inner="false"
-                data-animation-duration="1500"
-                data-animation-rule="linear"
-                data-animate-on-init="true"
-                data-color-border-outer="#333"
-                data-color-border-outer-end="#111"
-                data-color-border-middle="#222"
-                data-color-border-middle-end="#111"
-                data-color-border-inner="#111"
-                data-color-border-inner-end="#333"
-                data-color-needle-shadow-down="#333"
-                data-color-needle-circle-outer="#333"
-                data-color-needle-circle-outer-end="#111"
-                data-color-needle-circle-inner="#111"
-                data-color-needle-circle-inner-end="#222"
-                data-value-box-border-radius="0"
-                data-color-value-box-rect="#222"
-                data-color-value-box-rect-end="#333"
-              <?php } ?>
 
               <div class="gauge-cluster">
               <?php if ($weatherPackets[0]->temperature !== null): ?>
@@ -197,11 +161,8 @@
                                     {"from": <?php echo isImperialUnitUser() ? '70' : '25'?>, "to": <?php echo isImperialUnitUser() ? '90' : '35'?>, "color": "rgba(255, 173, 10, .5)"},
                                     {"from": <?php echo isImperialUnitUser() ? '90' : '35'?>, "to": <?php echo isImperialUnitUser() ? '120' : '45'?>, "color": "rgba(213, 62, 62, .6)"} ]'
                   data-value="<?php echo isImperialUnitUser() ? round(convertCelciusToFahrenheit($weatherPackets[0]->temperature), 2) : round($weatherPackets[0]->temperature, 2)?>"
-                  <?php gaugeParams(); ?>
                 ></canvas>
-                <script>
-                jQuery.ready();
-                </script>
+                <script>wxGaugeParams('temperature-gauge');</script>
               <?php endif; ?>
 
               <?php if ($weatherPackets[0]->humidity !== null): ?>
@@ -218,8 +179,8 @@
                                     {"from": 40, "to": 70, "color": "rgba(255, 173, 10, .5)"},
                                     {"from": 70, "to": 100, "color": "rgba(0, 255, 0, .3)"} ]'
                   data-value="<?php echo $weatherPackets[0]->humidity; ?>"
-                    <?php gaugeParams(); ?>
                 ></canvas>
+                <script>wxGaugeParams('humidity-gauge');</script>
               <?php endif; ?>
 
               <?php if ($weatherPackets[0]->pressure !== null): ?>
@@ -236,25 +197,26 @@
                                     {"from": <?php echo isImperialUnitUser() ? '28' : '900'?>, "to": <?php echo isImperialUnitUser() ? '30' : '975'?>, "color": "rgba(255, 173, 10, .5)"},
                                     {"from": <?php echo isImperialUnitUser() ? '30' : '1000'?>, "to": <?php echo isImperialUnitUser() ? '33' : '1100'?>, "color": "rgba(0, 255, 0, .3)"} ]'
                   data-value="<?php echo isImperialUnitUser() ? round(convertMbarToInchHg($weatherPackets[0]->pressure), 1) : round($weatherPackets[0]->pressure, 1)?>"
-                  <?php gaugeParams(); ?>
                 ></canvas>
+                <script>wxGaugeParams('pressure-gauge');</script>
               <?php endif; ?>
 
               <?php if ($weatherPackets[0]->wind_speed !== null): ?>
                 <!-- Wind speed gauge -->
                 <canvas data-type="radial-gauge" id="wind-speed-gauge" class="weather-gauge"
-                  data-units="°<?php echo isImperialUnitUser() ? 'mph' : 'm/s'?>"
+                  data-units="<?php echo isImperialUnitUser() ? 'mph' : 'm/s'?>"
                   data-title="Wind Speed"
                   data-min-value="0"
-                  data-max-value="<?php echo isImperialUnitUser() ? '120' : '50'?>"
-                  data-major-ticks="<?php echo isImperialUnitUser() ? '10,20,30,40,50,60,70,80,90,100,110,120' : '5,10,15,20,25,30,35,40,45,50'?>"
-                  data-minor-ticks="2"
+                  data-max-value="<?php echo isImperialUnitUser() ? '60' : '100'?>"
+                  data-major-ticks="<?php echo isImperialUnitUser() ? '0,5,10,15,20,25,30,35,40,45,50,55,60' : '10,20,30,40,50,60,70,80,90,100'?>"
+                  data-minor-ticks="5"
                   data-stroke-ticks="true"
-                  data-highlights='[{"from": 0, "to": 30, "color": "rgba(128,128, 0, .3)"},
-                                    {"from": 70, "to": 100, "color": "rgba(0, 255, 0, .3)"} ]'
-                  data-value="<?php echo isImperialUnitUser() ? round(convertMpsToMph($packetWeather->wind_speed), 2) : round($packetWeather->wind_speed, 2)?>"
-                  <?php gaugeParams(); ?>
+                  data-highlights='[{"from": 0, "to": 35, "color": "rgba(0, 255, 0, .3)"},
+                                    {"from": 35, "to": 50, "color": "rgba(255, 173, 10, .5)"},
+                                    {"from": 50, "to": 60, "color": "rgba(213, 62, 62, .6)"} ]'
+                  data-value="<?php echo isImperialUnitUser() ? round(convertMpsToMph($weatherPackets[0]->wind_speed), 2) : round($weatherPackets[0]->wind_speed, 2)?>"
                 ></canvas>
+                <script>wxGaugeParams('wind-speed-gauge');</script>
               <?php endif; ?>
 
               <?php if ($weatherPackets[0]->wind_direction !== null): ?>
@@ -270,9 +232,10 @@
                   data-start-angle="180"
                   data-stroke-ticks="false"
                   data-highlights="false"
+                  data-value-box="false"
                   data-value="<?php echo $weatherPackets[0]->wind_direction; ?>"
-                  <?php gaugeParams(); ?>
                 ></canvas>
+                <script>wxGaugeParams('wind-direction-gauge');</script>
               <?php endif; ?>
 
               <?php if ($weatherPackets[0]->luminosity !== null): ?>
@@ -291,54 +254,25 @@
                                     {"from": 900, "to": 1100, "color": "#aaaaaa"},
                                     {"from": 1100, "to": 1200, "color": "#cccccc"} ]'
                   data-value="<?php echo round($weatherPackets[0]->luminosity,0); ?>"
-                  <?php gaugeParams(); ?>
                 ></canvas>
+                <script>wxGaugeParams('luminosity-gauge');</script>
               <?php endif; ?>
               </div>
 
               <?php function rainGraph($title, $value) { ?>
                 <!-- <?php echo $title ?> gauge -->
                 <canvas data-type="linear-gauge" id="<?php echo strtolower(str_replace(' ', '', $title)); ?>-gauge" class="weather-gauge"
-                  data-width="120"
-                  data-height="240"
                   data-title="<?php echo $title ?>"
                   data-units="<?php echo isImperialUnitUser() ? 'in' : 'mm'?>"
-                  data-min-value="0"
                   data-max-value="<?php echo isImperialUnitUser() ? '4' : '120'?>"
                   data-major-ticks="<?php echo isImperialUnitUser() ? '0,0.5,1,1.5,2,2.5,3,3.5,4' : '0,10,20,30,40,50,60,70,80,90,100,110,120'?>"
                   data-minor-ticks="<?php echo isImperialUnitUser() ? '0.25' : '5'?>"
-                  data-stroke-ticks="true"
                   data-highlights='[{"from": <?php echo isImperialUnitUser() ? '0' : '0'?>, "to": <?php echo isImperialUnitUser() ? '1.5' : '50'?>, "color": "rgba(0, 255, 0, .3)"},
                                     {"from": <?php echo isImperialUnitUser() ? '1.5' : '50'?>, "to": <?php echo isImperialUnitUser() ? '3' : '90'?>, "color": "rgba(255, 173, 10, .5)"},
                                     {"from": <?php echo isImperialUnitUser() ? '3' : '90'?>, "to": <?php echo isImperialUnitUser() ? '4' : '120'?>, "color": "rgba(213, 62, 62, .6)"}]'
-                  data-color-major-ticks="#ddd"
-                  data-color-minor-ticks="#ddd"
-                  data-color-title="#eee"
-                  data-color-units="#ccc"
-                  data-color-numbers="#eee"
-                  data-color-plate="#222"
-                  data-border-shadow-width="0"
-                  data-borders="true"
-                  data-needle-type="arrow"
-                  data-needle-width="2"
-                  data-animation-duration="1500"
-                  data-animation-rule="linear"
-                  data-animate-on-init="true"
-                  data-color-border-outer="#333"
-                  data-color-border-outer-end="#111"
-                  data-color-border-middle="#222"
-                  data-color-border-middle-end="#111"
-                  data-color-border-inner="#111"
-                  data-color-border-inner-end="#333"
-                  data-tick-side="left"
-                  data-number-side="left"
-                  data-needle-side="left"
-                  data-bar-stroke-width="7"
-                  data-bar-begin-circle="false"
-                  data-color-bar="#ddd"
-                  data-color-bar-progress="#02cc20"
                   data-value="<?php echo $value ?>"
                   ></canvas>
+                  <script>rainGaugeParams('<?php echo strtolower(str_replace(' ', '', $title)); ?>-gauge')</script>
               <?php } ?>
               <?php if ($weatherPackets[0]->rain_1h !== null || $weatherPackets[0]->rain_24h !== null || $weatherPackets[0]->rain_since_midnight !== null): ?>
                 <div class="gauge-cluster">
@@ -387,48 +321,7 @@
               <?php endif; ?>
 
               <script type="text/javascript">
-                for (let i = 1; i < 11; i++) {
-                  window['ctx_'+i] = document.getElementById('graph_'+i);
-                  if (window['ctx_'+i] == null) continue;
-                  window['chart_'+i] = new Chart(window['ctx_'+i], {
-                    type: 'line',
-                    data: {
-                        datasets: [{
-                            label: "",
-                            data: [],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                      maintainAspectRatio: true,
-                      scales: {
-                        x: {
-                          type: 'time',
-                          time: {
-                            unit: 'minute',
-                            displayFormats: {
-                                minute: 'MMM DD hh:mm a'
-                            },
-                            tooltipFormat: 'MMM DD hh:mm a'
-                          },
-                          title: {
-                            display: false
-                          },
-                          ticks: {
-                              autoSkip: true,
-                              maxTicksLimit: 20
-                          }
-                        },
-                        y: {
-                          title: {
-                            display: true,
-                            text: 'value'
-                          }
-                        }
-                      }
-                    }
-                  }); // End chart
-                }
+                wxInitGraph();
                 $(document).ready(function() {
                   for (let i = 1; i < 11; i++) {
                     if (window['chart_'+i] != null) {

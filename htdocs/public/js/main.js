@@ -17,6 +17,21 @@ jQuery(document).ready(function ($) {
     e.preventDefault();
   });
 
+  $('#timetravel-form').bind('submit',function(e) {
+    if ($('#timetravel-date').val() != '0' && $('#timetravel-time').val() != '0') {
+        trackdirect.setTimeLength(60, false);
+        var ts = moment($('#timetravel-date').val() + ' ' + $('#timetravel-time').val(), 'YYYY-MM-DD HH:mm').unix();
+        trackdirect.setTimeTravelTimestamp(ts);
+        $('#right-container-timetravel-content').html('Showing ' + $('#timetravel-date').val() + ' ' + $('#timetravel-time').val());
+        $('#right-container-timetravel').show();
+    } else {
+        trackdirect.setTimeTravelTimestamp(0, true);
+        $('#right-container-timetravel').hide();
+    }
+    $('#modal-timetravel').hide();
+    e.preventDefault();
+  });
+
   const curtime = moment();
   var duration = moment.duration(curtime.diff(dbstart));
   var dbdays = Math.floor(duration.asDays());
@@ -27,9 +42,125 @@ jQuery(document).ready(function ($) {
      maxDate: '0',
      dateFormat: 'yy-mm-dd'
   });
+  for (x=0; x<24; x++) {
+    $("#timetravel-time").append(new Option((x < 10 ? '0':'')+x+':00', (x < 10 ? '0':'')+x+':00'));
+  }
 });
 
+function wxGaugeParams(id) {
+  $('#'+id).attr('data-width', '220');
+  $('#'+id).attr('data-height', '220');
+  if (id != 'wind-direction-gauge') $('#'+id).attr('data-ticks-angle','225');
+  if (id != 'wind-direction-gauge') $('#'+id).attr('data-start-angle','67.5');
+  $('#'+id).attr('data-color-major-ticks','#ddd');
+  $('#'+id).attr('data-color-minor-ticks','#ddd');
+  $('#'+id).attr('data-color-title','#eee');
+  $('#'+id).attr('data-color-units','#ccc');
+  $('#'+id).attr('data-color-numbers','#eee');
+  $('#'+id).attr('data-color-plate','#222');
+  $('#'+id).attr('data-border-shadow-width','0');
+  $('#'+id).attr('data-borders','true');
+  $('#'+id).attr('data-needle-type','arrow');
+  $('#'+id).attr('data-needle-width','2');
+  $('#'+id).attr('data-needle-circle-size','7');
+  $('#'+id).attr('data-needle-circle-outer','true');
+  $('#'+id).attr('data-needle-circle-inner','false');
+  $('#'+id).attr('data-animation-duration','1500');
+  $('#'+id).attr('data-animation-rule','linear');
+  $('#'+id).attr('data-animate-on-init','true');
+  $('#'+id).attr('data-color-border-outer','#333');
+  $('#'+id).attr('data-color-border-outer-end','#111');
+  $('#'+id).attr('data-color-border-middle','#222');
+  $('#'+id).attr('data-color-border-middle-end','#111');
+  $('#'+id).attr('data-color-border-inner','#111');
+  $('#'+id).attr('data-color-border-inner-end','#333');
+  $('#'+id).attr('data-color-needle-shadow-down','#333');
+  $('#'+id).attr('data-color-needle-circle-outer','#333');
+  $('#'+id).attr('data-color-needle-circle-outer-end','#111');
+  $('#'+id).attr('data-color-needle-circle-inner','#111');
+  $('#'+id).attr('data-color-needle-circle-inner-end','#222');
+  $('#'+id).attr('data-value-box-border-radius','0');
+  $('#'+id).attr('data-color-value-box-rect','#222');
+  $('#'+id).attr('data-color-value-box-rect-end','#333');
+}
 
+function rainGaugeParams(id) {
+  $('#'+id).attr('data-width', '120');
+  $('#'+id).attr('data-height', '240');
+  $('#'+id).attr('data-min-value', '0');
+  $('#'+id).attr('data-stroke-ticks', 'true');
+  $('#'+id).attr('data-color-major-ticks','#ddd');
+  $('#'+id).attr('data-color-minor-ticks','#ddd');
+  $('#'+id).attr('data-color-title','#eee');
+  $('#'+id).attr('data-color-units','#ccc');
+  $('#'+id).attr('data-color-numbers','#eee');
+  $('#'+id).attr('data-color-plate','#222');
+  $('#'+id).attr('data-border-shadow-width','0');
+  $('#'+id).attr('data-borders','true');
+  $('#'+id).attr('data-needle-type','arrow');
+  $('#'+id).attr('data-needle-width','2');
+  $('#'+id).attr('data-animation-duration','1500');
+  $('#'+id).attr('data-animation-rule','linear');
+  $('#'+id).attr('data-animate-on-init','true');
+  $('#'+id).attr('data-color-border-outer','#333');
+  $('#'+id).attr('data-color-border-outer-end','#111');
+  $('#'+id).attr('data-color-border-middle','#222');
+  $('#'+id).attr('data-color-border-middle-end','#111');
+  $('#'+id).attr('data-color-border-inner','#111');
+  $('#'+id).attr('data-color-border-inner-end','#333');
+  $('#'+id).attr('data-tick-side','left');
+  $('#'+id).attr('data-number-side','left');
+  $('#'+id).attr('data-needle-side','left');
+  $('#'+id).attr('data-bar-stroke-width','7');
+  $('#'+id).attr('data-bar-begin-circle','false');
+  $('#'+id).attr('data-color-bar','#ddd');
+  $('#'+id).attr('data-color-bar-progress','#02cc20');
+}
+
+function wxInitGraph() {
+  for (let i = 1; i < 11; i++) {
+    window['ctx_'+i] = document.getElementById('graph_'+i);
+    if (window['ctx_'+i] == null) continue;
+    window['chart_'+i] = new Chart(window['ctx_'+i], {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: "",
+              data: [],
+              borderWidth: 1
+          }]
+      },
+      options: {
+        maintainAspectRatio: true,
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'minute',
+              displayFormats: {
+                  minute: 'MMM DD hh:mm a'
+              },
+              tooltipFormat: 'MMM DD hh:mm a'
+            },
+            title: {
+              display: false
+            },
+            ticks: {
+                autoSkip: true,
+                maxTicksLimit: 20
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'value'
+            }
+          }
+        }
+      }
+    }); // End chart
+  }
+}
 // Init local time presentation
 jQuery(document).ready(function ($) {
   var locale = window.navigator.userLanguage || window.navigator.language;
