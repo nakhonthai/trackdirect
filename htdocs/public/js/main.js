@@ -117,8 +117,8 @@ function rainGaugeParams(id) {
   $('#'+id).attr('data-color-bar-progress','#02cc20');
 }
 
-function wxInitGraph() {
-  for (let i = 1; i < 11; i++) {
+function initGraph(cnt) {
+  for (let i = 1; i < cnt; i++) {
     window['ctx_'+i] = document.getElementById('graph_'+i);
     if (window['ctx_'+i] == null) continue;
     window['chart_'+i] = new Chart(window['ctx_'+i], {

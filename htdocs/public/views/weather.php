@@ -321,7 +321,7 @@
               <?php endif; ?>
 
               <script type="text/javascript">
-                wxInitGraph();
+                initGraph(10);
                 $(document).ready(function() {
                   for (let i = 1; i < 11; i++) {
                     if (window['chart_'+i] != null) {

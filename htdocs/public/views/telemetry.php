@@ -266,48 +266,7 @@
                   <div style="height:20px;"></div>
                 <?php endfor; ?>
                 <script type="text/javascript">
-                  for (let i = 1; i < 6; i++) {
-                    window['ctx_'+i] = document.getElementById('graph_'+i);
-                    if (window['ctx_'+i] == null) continue;
-                    window['chart_'+i] = new Chart(window['ctx_'+i], {
-                      type: 'line',
-                      data: {
-                          datasets: [{
-                              label: "",
-                              data: [],
-                              borderWidth: 1
-                          }]
-                      },
-                      options: {
-                        maintainAspectRatio: true,
-                        scales: {
-                          x: {
-                            type: 'time',
-                            time: {
-                              unit: 'minute',
-                              displayFormats: {
-                                  minute: 'MMM DD hh:mm a'
-                              },
-                              tooltipFormat: 'MMM DD hh:mm a'
-                            },
-                            title: {
-                              display: false
-                            },
-                            ticks: {
-                                autoSkip: true,
-                                maxTicksLimit: 20
-                            }
-                          },
-                          y: {
-                            title: {
-                              display: true,
-                              text: 'value'
-                            }
-                          }
-                        }
-                      }
-                    }); // End chart
-                  }
+                  initGraph(5);
                   $(document).ready(function() {
                     for (let i = 1; i < 6; i++) {
                       if (window['chart_'+i] != null) {
@@ -429,48 +388,7 @@
                     <div style="height:20px;"></div>
                   <?php endfor; ?>
                   <script type="text/javascript">
-                    for (let i = 1; i < 9; i++) {
-                      window['ctx_'+i] = document.getElementById('graph_'+i);
-                      if (window['ctx_'+i] == null) continue;
-                      window['chart_'+i] = new Chart(window['ctx_'+i], {
-                        type: 'line',
-                        data: {
-                            datasets: [{
-                                label: "",
-                                data: [],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                          maintainAspectRatio: true,
-                          scales: {
-                            x: {
-                              type: 'time',
-                              time: {
-                                unit: 'minute',
-                                displayFormats: {
-                                    minute: 'MMM DD hh:mm a'
-                                },
-                                tooltipFormat: 'MMM DD hh:mm a'
-                              },
-                              title: {
-                                display: false
-                              },
-                              ticks: {
-                                  autoSkip: true,
-                                  maxTicksLimit: 20
-                              }
-                            },
-                            y: {
-                              title: {
-                                display: true,
-                                text: 'value'
-                              }
-                            }
-                          }
-                        }
-                      }); // End chart
-                    }
+                  initGraph(9);
                     $(document).ready(function() {
                       for (let i = 1; i < 9; i++) {
                         if (window['chart_'+i] != null) {
