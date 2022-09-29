@@ -147,6 +147,8 @@ class Station extends Model
                 return '<a target="_blank" rel="nofollow" href="http://www.aprs-is.net/">APRS-IS</a>';
             } elseif ($this->sourceId == 2) {
                 return '<a target="_blank" rel="nofollow" href="http://wxqa.com/">CWOP (Citizen Weather Observer Program)</a>';
+            } elseif ($this->sourceId == 3) {
+                return '<a target="_blank" rel="nofollow" href="http://www.cbaprs.de">CBAPRS (Citizen Band APRS)</a>';
             } elseif ($this->sourceId == 5) {
                 return '<a target="_blank" rel="nofollow" href="http://wiki.glidernet.org/">OGN (Open Glider Network)</a>';
             }

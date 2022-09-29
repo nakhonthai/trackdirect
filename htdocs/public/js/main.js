@@ -117,6 +117,15 @@ function rainGaugeParams(id) {
   $('#'+id).attr('data-color-bar-progress','#02cc20');
 }
 
+function loadOverviewData(id) {
+  $.getJSON('/data/overview.php?id='+id+'&type=pf').done(function(response) {
+    if (response.packet_frequency != null) $("#packet_frequency").html('<span>' +response.packet_frequency+'s</span> <span>('+response.packet_frequency_count+' packets)</span>');
+    else $("#packet_frequency").html('<span>No recent packets found</span>');
+    if (response.packet_frequency_count != null) $("#total_packets").html('<span>' +response.packet_frequency_count+'</span>');
+    else $("#total_packets").html('<span>N/A</span>');
+  });
+}
+
 function initGraph(cnt) {
   for (let i = 1; i < cnt; i++) {
     window['ctx_'+i] = document.getElementById('graph_'+i);

@@ -1070,15 +1070,18 @@ trackdirect.models.InfoWindow.prototype._getWeatherDiv = function () {
   weatherDateString = moment(weatherDate).format(
     trackdirect.settings.dateFormatNoTimeZone
   );
-  weatherDiv.append("<b>Latest Weather</b>  " + weatherDateString + "<br/>");
+
+  var weatherData = $(document.createElement("fieldset"));
+  weatherData.append("<legend><a href='' onclick='loadView(\"/views/weather.php?id="+this._marker.packet.station_id +"&imperialUnits="+(this._defaultMap.state.useImperialUnit ? "1":"0")+"\");return false;'>Latest Weather</a> -  " + weatherDateString + "</legend>");
 
   if (!trackdirect.isMobile && $(window).height() >= 300) {
-    weatherDiv.append(this._getWeatherDivTemperatureString());
-    weatherDiv.append(this._getWeatherDivHumidityString());
-    weatherDiv.append(this._getWeatherDivPressureString());
-    weatherDiv.append(this._getWeatherDivRainString());
-    weatherDiv.append(this._getWeatherDivWindString());
+    weatherData.append(this._getWeatherDivTemperatureString());
+    weatherData.append(this._getWeatherDivHumidityString());
+    weatherData.append(this._getWeatherDivPressureString());
+    weatherData.append(this._getWeatherDivRainString());
+    weatherData.append(this._getWeatherDivWindString());
   }
+  weatherDiv.append(weatherData);
   return weatherDiv;
 };
 
@@ -1097,7 +1100,7 @@ trackdirect.models.InfoWindow.prototype._getTelemetryDiv = function () {
   telemetryDateString = moment(telemetryDate).format(
     trackdirect.settings.dateFormatNoTimeZone
   );
-  telemetryDiv.append("Latest Telemetry  " + telemetryDateString + "<br/>");
+  telemetryDiv.append("<a href='' onclick='loadView(\"/views/telemetry.php?id="+this._marker.packet.station_id +"&imperialUnits="+(this._defaultMap.state.useImperialUnit ? "1":"0")+"\");return false;'>Latest Telemetry</a>  " + telemetryDateString + "<br/>");
 
   return telemetryDiv;
 };

@@ -8,7 +8,7 @@
         $rows = $_GET['rows'] ?? 25;
         $offset = ($page - 1) * $rows;
 
-        $start_time = microtime();
+        $start_time = microtime(true);
         if (($_GET['category'] ?? 1) == 2) {
             $packets = PacketRepository::getInstance()->getObjectListWithRawBySenderStationId($station->id, $rows, $offset);
             $count = PacketRepository::getInstance()->getNumberOfPacketsWithRawBySenderStationId($station->id);
@@ -16,7 +16,7 @@
             $packets = PacketRepository::getInstance()->getObjectListWithRawByStationId($station->id, $rows, $offset);
             $count = PacketRepository::getInstance()->getNumberOfPacketsWithRawByStationId($station->id);
         }
-        $dbtime = microtime() - $start_time;
+        $dbtime = microtime(true) - $start_time;
 
         $pages = ceil($count / $rows);
     ?>

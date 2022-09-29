@@ -374,22 +374,16 @@
                 </div>
             <?php endif; ?>
 
-
             <!-- Packet Frequency & Totals-->
-            <?php $packetFrequencyNumberOfPackets = null; ?>
-            <?php $stationPacketFrequency = $station->getPacketFrequency(null, $packetFrequencyNumberOfPackets); ?>
-            <?php $stationTotalPackets = $station->getTotalPackets(); ?>
-            <?php if ($stationPacketFrequency != null) : ?>
                 <div class="overview-content-divider"></div>
                 <div>
                     <div class="overview-content-summary-hr">Packet frequency:</div>
-                    <div class="overview-content-packet-frequency" title="Calculated packet frequency"><span><?php echo $stationPacketFrequency; ?>s</span> <span>(Latest <?php echo $packetFrequencyNumberOfPackets; ?> packets)</span></div>
+                    <div class="overview-content-packet-frequency" title="Calculated packet frequency" id="packet_frequency"><span>calculating ...</span></div>
                 </div>
                 <div>
                     <div class="overview-content-summary-hr">Packets stored:</div>
-                    <div class="overview-content-packet-frequency" title="Total packets recorded"><span><?php echo $stationTotalPackets; ?></span></div>
+                    <div class="overview-content-packet-frequency" title="Total packets recorded" id="total_packets"><span>retrieving ...</span></div>
                 </div>
-            <?php endif; ?>
 
             <?php $stationLatestBulletinPacket = PacketRepository::getInstance()->getBulletinObjectListByStationId($station->id, 1, 0, 2);?>
             <?php if ($stationLatestBulletinPacket != null) : ?>
@@ -572,6 +566,7 @@
                     });
                 <?php endif; ?>
             }
+            loadOverviewData(<?php echo $station->id ?>);
         });
     </script>
 <?php endif; ?>
