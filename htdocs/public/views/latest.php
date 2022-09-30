@@ -24,7 +24,7 @@
                     <input type="radio" name="source" value="0" <?php if ($source == 0) echo 'checked="checked"'; ?> /> All
                     <input type="radio" name="source" value="1" <?php if ($source == 1) echo 'checked="checked"'; ?> /> APRS-IS
                     <input type="radio" name="source" value="2" <?php if ($source == 2) echo 'checked="checked"'; ?> /> CWOP
-                    <input type="radio" name="source" value="3" <?php if ($source == 5) echo 'checked="checked"'; ?> /> OGN
+                    <input type="radio" name="source" value="5" <?php if ($source == 5) echo 'checked="checked"'; ?> /> OGN
                     <input type="radio" name="source" value="3" <?php if ($source == 3) echo 'checked="checked"'; ?> /> CBAPRS
                 </form>
             </span>

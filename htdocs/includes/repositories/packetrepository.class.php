@@ -47,13 +47,16 @@ class PacketRepository extends ModelRepository
      * @param  int $offset
      * @return array
      */
-    public function getObjectListWithRawByStationId($stationId, $limit, $offset)
+    public function getObjectListWithRawByStationId($stationId, $limit, $offset, $startAt=null, $endAt=null)
     {
         if (!isInt($stationId) || !isInt($limit) || !isInt($offset)) {
             return [];
         }
-        $sql = 'select packet.* from packet packet where station_id = ? and timestamp > ? and raw is not null order by timestamp desc, id desc limit ? offset ?';
-        $parameters = [$stationId, time() - (24*60*60), $limit, $offset];
+        $startTime = $startAt ?? (time() - 24*60*60);
+        $endTime = $endAt ?? time();
+
+        $sql = 'select packet.* from packet packet where station_id = ? and timestamp > ?  and timestamp < ? and raw is not null order by timestamp desc, id desc limit ? offset ?';
+        $parameters = [$stationId, $startTime, $endTime, $limit, $offset];
         return $this->getObjectListFromSql($sql, $parameters);
     }
 
@@ -161,13 +164,16 @@ class PacketRepository extends ModelRepository
      * @param  int $stationId
      * @return int
      */
-    public function getNumberOfPacketsWithRawByStationId($stationId)
+    public function getNumberOfPacketsWithRawByStationId($stationId, $startAt=null, $endAt=null)
     {
         if (!isInt($stationId)) {
             return 0;
         }
-        $sql = 'select count(*) c from packet where station_id = ? and timestamp > ? and raw is not null';
-        $parameters = [$stationId, time() - (24*60*60)];
+        $startTime = $startAt ?? (time() - 24*60*60);
+        $endTime = $endAt ?? time();
+
+        $sql = 'select count(*) c from packet where station_id = ? and timestamp > ? and timestamp < ? and raw is not null';
+        $parameters = [$stationId, $startTime, $endTime];
 
         $pdo = PDOConnection::getInstance();
         $stmt = $pdo->prepareAndExec($sql, $parameters);
@@ -189,13 +195,16 @@ class PacketRepository extends ModelRepository
      * @param  int $offset
      * @return array
      */
-    public function getObjectListWithRawBySenderStationId($stationId, $limit, $offset)
+    public function getObjectListWithRawBySenderStationId($stationId, $limit, $offset, $startAt=null, $endAt=null)
     {
         if (!isInt($stationId) || !isInt($limit) || !isInt($offset)) {
             return [];
         }
-        $sql = 'select packet.* from packet where sender_id in (select latest_sender_id from station where id = ?) and timestamp > ? and raw is not null order by timestamp desc, id desc limit ? offset ?';
-        $parameters = [$stationId, time() - (24*60*60), $limit, $offset];
+        $startTime = $startAt ?? (time() - 24*60*60);
+        $endTime = $endAt ?? time();
+
+        $sql = 'select packet.* from packet where sender_id in (select latest_sender_id from station where id = ?) and timestamp > ? and timestamp < ? and raw is not null order by timestamp desc, id desc limit ? offset ?';
+        $parameters = [$stationId, $startTime, $endTime, $limit, $offset];
         return $this->getObjectListFromSql($sql, $parameters);
     }
 
@@ -205,13 +214,16 @@ class PacketRepository extends ModelRepository
      * @param  int $stationId
      * @return int
      */
-    public function getNumberOfPacketsWithRawBySenderStationId($stationId)
+    public function getNumberOfPacketsWithRawBySenderStationId($stationId, $startAt=null, $endAt=null)
     {
         if (!isInt($stationId)) {
             return 0;
         }
-        $sql = 'select count(*) c from packet where sender_id in (select latest_sender_id from station where id = ?) and timestamp > ? and raw is not null';
-        $parameters = [$stationId, time() - (24*60*60)];
+        $startTime = $startAt ?? (time() - 24*60*60);
+        $endTime = $endAt ?? time();
+
+        $sql = 'select count(*) c from packet where sender_id in (select latest_sender_id from station where id = ?) and timestamp > ? and timestamp < ? and raw is not null';
+        $parameters = [$stationId, $startTime, $endTime];
 
         $pdo = PDOConnection::getInstance();
         $stmt = $pdo->prepareAndExec($sql, $parameters);

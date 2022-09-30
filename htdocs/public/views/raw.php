@@ -2,24 +2,26 @@
 
 <?php $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null); ?>
 <?php if ($station->isExistingObject()) : ?>
+<?php
+  $page = $_GET['page'] ?? 1;
+  $rows = $_GET['rows'] ?? 25;
+  $offset = ($page - 1) * $rows;
 
-    <?php
-        $page = $_GET['page'] ?? 1;
-        $rows = $_GET['rows'] ?? 25;
-        $offset = ($page - 1) * $rows;
+  $start = $_GET['start'] ?? time()-86400;
+  $end = $_GET['end'] ?? time();
 
-        $start_time = microtime(true);
-        if (($_GET['category'] ?? 1) == 2) {
-            $packets = PacketRepository::getInstance()->getObjectListWithRawBySenderStationId($station->id, $rows, $offset);
-            $count = PacketRepository::getInstance()->getNumberOfPacketsWithRawBySenderStationId($station->id);
-        } else {
-            $packets = PacketRepository::getInstance()->getObjectListWithRawByStationId($station->id, $rows, $offset);
-            $count = PacketRepository::getInstance()->getNumberOfPacketsWithRawByStationId($station->id);
-        }
-        $dbtime = microtime(true) - $start_time;
+  $start_time = microtime(true);
+  if (($_GET['category'] ?? 1) == 2) {
+      $packets = PacketRepository::getInstance()->getObjectListWithRawBySenderStationId($station->id, $rows, $offset, $start, $end);
+      $count = PacketRepository::getInstance()->getNumberOfPacketsWithRawBySenderStationId($station->id, $start, $end);
+  } else {
+      $packets = PacketRepository::getInstance()->getObjectListWithRawByStationId($station->id, $rows, $offset, $start, $end);
+      $count = PacketRepository::getInstance()->getNumberOfPacketsWithRawByStationId($station->id, $start, $end);
+  }
+  $dbtime = microtime(true) - $start_time;
 
-        $pages = ceil($count / $rows);
-    ?>
+  $pages = ceil($count / $rows);
+?>
 
     <title><?php echo $station->name; ?> Raw Packets</title>
     <div class="modal-inner-content">
@@ -36,9 +38,9 @@
         <div class="horizontal-line">&nbsp;</div>
 
         <p>
-          <?php if ($count): ?>A total of <?php echo $count ?> recevied packets have been found for station/object <b><?php echo $station->name; ?></b> from the past 24 hours.
+          <?php if ($count): ?>A total of <?php echo $count ?> recevied packets have been found for station/object <b><?php echo $station->name; ?></b> <?php if ($start < (time()-86400)): ?>between <span class="packetts" style="font-weight:bold;"><?php echo $start;?></span> and <span class="packetts" style="font-weight:bold;"><?php echo $end; ?></span><?php else: ?>from the past 24 hours<?php endif;?>.
           <?php else: ?>If no packets are shown the station/object has not sent any packets within the past 24 hours.<?php endif; ?>
-          This data took <?php echo round($dbtime, 3) ?> seconds to find in our database.
+          This took <?php echo round($dbtime, 3) ?> seconds to find in our database.
         </p>
 
         <?php if ($station->sourceId == 5) : ?>
@@ -51,38 +53,91 @@
             </p>
         <?php endif; ?>
 
-        <div class="form-container">
+        <form id="raw-form" style="float:right;line-height: 28px">
+          Show
+          <select id="raw-rows" sclass="pagination-rows">
+              <option <?php echo ($rows == 25 ? 'selected' : ''); ?> value="25">25</option>
+              <option <?php echo ($rows == 50 ? 'selected' : ''); ?> value="50">50</option>
+              <option <?php echo ($rows == 100 ? 'selected' : ''); ?> value="100">100</option>
+              <option <?php echo ($rows == 200 ? 'selected' : ''); ?> value="200">200</option>
+              <option <?php echo ($rows == 300 ? 'selected' : ''); ?> value="300">300</option>
+          </select>
+            rows of
             <?php if ($station->stationTypeId == 1) : ?>
-                <select id="raw-category" style="float:left; margin-right: 5px;">
-                    <option <?php echo (($_GET['category'] ?? 1) == 1 ? 'selected' : ''); ?> value="1">Packets regarding <?php echo $station->name; ?></option>
-                    <option <?php echo (($_GET['category'] ?? 1) == 2 ? 'selected' : ''); ?> value="2">Packets sent by <?php echo $station->name; ?></option>
+                packets
+                <select id="raw-category" >
+                    <option <?php echo (($_GET['category'] ?? 1) == 1 ? 'selected' : ''); ?> value="1">regarding <?php echo $station->name; ?></option>
+                    <option <?php echo (($_GET['category'] ?? 1) == 2 ? 'selected' : ''); ?> value="2">sent by <?php echo $station->name; ?></option>
                 </select>
+                displaying
             <?php endif; ?>
 
-            <select id="raw-type" style="float:left; margin-right: 5px;">
-                <option <?php echo (($_GET['type'] ?? 1) == 1 ? 'selected' : ''); ?> value="1">Raw Packets</option>
-                <option <?php echo (($_GET['type'] ?? 1) == 2 ? 'selected' : ''); ?> value="2">Decoded Data</option>
+            <select id="raw-type">
+                <option <?php echo (($_GET['type'] ?? 1) == 1 ? 'selected' : ''); ?> value="1">Raw</option>
+                <option <?php echo (($_GET['type'] ?? 1) == 2 ? 'selected' : ''); ?> value="2">Decoded</option>
             </select>
-
-            <select id="raw-rows" style="float:left; margin-right: 5px;" class="pagination-rows">
-                <option <?php echo ($rows == 25 ? 'selected' : ''); ?> value="25">25 rows</option>
-                <option <?php echo ($rows == 50 ? 'selected' : ''); ?> value="50">50 rows</option>
-                <option <?php echo ($rows == 100 ? 'selected' : ''); ?> value="100">100 rows</option>
-                <option <?php echo ($rows == 200 ? 'selected' : ''); ?> value="200">200 rows</option>
-                <option <?php echo ($rows == 300 ? 'selected' : ''); ?> value="300">300 rows</option>
-            </select>
+            data
+            <?php if (intval(getDatabaseConfig('days_to_save_packet_data')) > 1): ?>
+              from <input type="text" id="start-date" class="form-control" style="height:.5em;width:8.5em" readonly />
+              to <input type="text" id="end-date" class="form-control" style="height:.5em;width:8.5em" readonly />
+            <input type="submit" value="Go" style="line-height:0px;height:16px;width:3em;padding: 12px 0px;" />
+          <?php endif; ?>
+        </form>
+        <script>
+          $("#raw-form").submit(function(e) {
+            var timecut = '';
+          <?php if (intval(getDatabaseConfig('days_to_save_packet_data')) > 1): ?>
+            if ($('#start-date').val() != "") {
+              var startat = moment($('#start-date').val(), 'YYYY-MM-DD HH:mm').unix();
+              var endat = moment($('#end-date').val(), 'YYYY-MM-DD HH:mm').endOf('day').unix();
+              timecut = '&start='+startat+'&end='+endat;
+            }
+          <?php endif; ?>
+            loadView('raw.php?id=<?php echo $_GET['id'] ;?>&category='+$('#raw-category').val()+'&type='+$('#raw-type').val()+'&rows='+$('#raw-rows').val()+'&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>'+timecut);
+            e.preventDefault();
+            return false;
+          });
+          $(document).ready(function(){
+          <?php if (intval(getDatabaseConfig('days_to_save_packet_data')) > 1): ?>
+            $("#start-date, #end-date").datepicker({
+                showOtherMonths: true,
+                selectOtherMonths: true,
+                minDate: -(<?php echo getDatabaseConfig('days_to_save_packet_data') ?>),
+                maxDate: '0',
+                dateFormat: 'yy-mm-dd',
+                showButtonPanel: true,
+                onSelect: function(selectedDate, dpObj) {
+                  if (dpObj.id == 'start-date') {
+                    $("#end-date").datepicker("option", "minDate", selectedDate);
+                    if ($('#end-date').val() == "") $('#end-date').val($("#start-date").val());
+                  }
+                  else if (dpObj.id == 'end-date') {
+                    $("#start-date").datepicker("option", "maxDate", selectedDate);
+                    if ($('#start-date').val() == "") $('#start-date').val($("#end-date").val());
+                  }
+                }
+            });
+            <?php if ($start < (time()-86400)): ?>
+              $("#start-date").datepicker('setDate', new Date(1000 * <?php echo $start; ?>));
+              $("#end-date").datepicker('setDate', new Date(1000 * <?php echo $end; ?>));
+            <?php endif; ?>
+          <?php endif; ?>
+          });
+        </script>
+        <div style="float:left;line-height: 28px">
+              <span style="float:left;">Displaying <?php echo $offset+1; ?> - <?php echo ($offset+$rows < $count ? $offset+$rows : $count); ?> of <?php echo $count ?> packets.
         </div>
-
+        <div style="clear:both;"></div>
         <?php if ($pages > 1): ?>
             <div class="pagination">
-              <a class="tdlink" href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
+              <a class="tdlink" href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
               <?php for($i = max(1, $page - 3); $i <= min($pages, $page + 3); $i++) : ?>
-              <a href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
+              <a href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
               <?php endfor; ?>
-              <a class="tdlink" href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=<?php echo $pages; ?>">>></a>
+              <a class="tdlink" href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $pages; ?>">>></a>
             </div>
         <?php endif; ?>
-
+        <div style="clear:both;"></div>
         <div id="raw-content-output">
             <?php foreach (array_slice($packets, 0, $rows) as $packet) : ?>
                 <?php if (($_GET['type'] ?? 1) == 1) : ?>
@@ -481,22 +536,14 @@
             var locale = window.navigator.userLanguage || window.navigator.language;
             moment.locale(locale);
 
-            $('.raw-packet-timestamp').each(function() {
+            $('.raw-packet-timestamp,.packetts').each(function() {
                 if ($(this).html().trim() != '' && !isNaN($(this).html().trim())) {
                     $(this).html(moment(new Date(1000 * $(this).html())).format('L LTSZ'));
                 }
             });
 
-            $('#raw-category').change(function () {
-                loadView("/views/raw.php?id=<?php echo $station->id ?>&type=" + $('#raw-type').val() + "&category=" + $('#raw-category').val() + "&rows=" + $('#raw-rows').val() + "&page=1");
-            });
-
-            $('#raw-type').change(function () {
-                loadView("/views/raw.php?id=<?php echo $station->id ?>&type=" + $('#raw-type').val() + "&category=" + $('#raw-category').val() + "&rows=" + $('#raw-rows').val() + "&page=1");
-            });
-
-            $('#raw-rows').change(function () {
-                loadView("/views/raw.php?id=<?php echo $station->id ?>&type=" + $('#raw-type').val() + "&category=" + $('#raw-category').val() + "&rows=" + $('#raw-rows').val() + "&page=1");
+            $('#raw-category,#raw-type,#raw-rows').change(function () {
+              $("#raw-form").submit();
             });
 
             $('.parsepkt').each(function(){

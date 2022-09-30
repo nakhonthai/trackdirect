@@ -1417,6 +1417,7 @@ trackdirect.models.Map.prototype._getLeafletMapOptions = function () {
     zoomControl: false,
     minZoom: 3,
     maxZoom: 19,
+    preferCanvas: true,
     closePopupOnClick: false,
   };
 

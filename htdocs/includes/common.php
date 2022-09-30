@@ -1814,15 +1814,37 @@ function getView($request) {
 }
 
 /**
- * Returnes an assoc array containing website related values from config
+ * Helper function to return an assoc array containing website related values from config
  *
  * @param {string} $key
  * @return string
  * */
 function getWebsiteConfig($key) {
-    $config = parse_ini_file(ROOT . '/../config/trackdirect.ini', true);
-    if (isset($config['website']) && isset($config['website'][$key])) {
-        return $config['website'][$key];
+    return getConfig('website', $key);
+}
+
+/**
+ * Helper function to return an assoc array containing database related values from config
+ *
+ * @param {string} $key
+ * @return string
+ * */
+function getDatabaseConfig($key) {
+  return getConfig('database', $key);
+}
+
+/**
+ * Returnes an assoc array containing related $key values from $section in config
+ *
+ * @param {string} $section
+ * @param {string} $key
+ * @return string
+ * */
+function getConfig($section, $key) {
+    static $config; // Load file once
+    if ($config == null) $config = parse_ini_file(ROOT . '/../config/trackdirect.ini', true);
+    if (isset($config[$section]) && isset($config[$section][$key])) {
+        return $config[$section][$key];
     }
 
     return null;
