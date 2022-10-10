@@ -127,7 +127,7 @@ function loadOverviewData(id) {
 }
 
 function initGraph(cnt) {
-  for (let i = 1; i < cnt; i++) {
+  for (let i = 1; i <= cnt; i++) {
     window['ctx_'+i] = document.getElementById('graph_'+i);
     if (window['ctx_'+i] == null) continue;
     window['chart_'+i] = new Chart(window['ctx_'+i], {

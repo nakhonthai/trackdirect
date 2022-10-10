@@ -123,6 +123,21 @@ function convertMbarToInchHg($value)
 }
 
 /**
+ * Convert a value based on its unit
+ *
+ * @param  {float} value
+ * @param  {string} unit
+ * @return float
+ */
+function universalDataUnitConvert($value, $unit) {
+  if (!isImperialUnitUser()) return array('value' => $value, 'unit' => $unit);
+  $unit = trim($unit);
+
+  if ($unit == 'C') return array('value' => round(convertCelciusToFahrenheit($value), 2), 'unit' => 'F');
+  return array('value' => $value, 'unit' => $unit);
+}
+
+/**
  * Returnes true if value is float
  *
  * @param  mixed $value

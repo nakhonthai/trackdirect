@@ -136,56 +136,19 @@
                           </tr>
                       </thead>
                       <tbody>
+                        <?php for ($x = 1; $x <= 5; $x++): ?>
                           <tr>
-                              <td width="20%"><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(1)); ?>:</td>
+                              <td width="20%"><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName($x)); ?>:</td>
                               <td>
-                                <?php if ($telemetryPackets[0]->val1 !== null) : ?>
-                                    <?php echo round($telemetryPackets[0]->getValue(1), 2); ?> <?php echo htmlspecialchars($telemetryPackets[0]->getValueUnit(1)); ?>
+                                <?php if ($telemetryPackets[0]->{"val$x"} !== null): ?>
+                                  <?php $converted = universalDataUnitConvert(round($telemetryPackets[0]->getValue($x), 2), $telemetryPackets[0]->getValueUnit($x)); ?>
+                                  <?php echo $converted['value']; ?> <?php echo htmlspecialchars($converted['unit']); ?>
                                 <?php else : ?>
                                     -
                                 <?php endif; ?>
                               </td>
                           </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(2)); ?>:</td>
-                              <td>
-                                <?php if ($telemetryPackets[0]->val2 !== null) : ?>
-                                    <?php echo round($telemetryPackets[0]->getValue(2), 2); ?> <?php echo htmlspecialchars($telemetryPackets[0]->getValueUnit(2)); ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                              </td>
-                          </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(3)); ?>:</td>
-                              <td>
-                                <?php if ($telemetryPackets[0]->val3 !== null) : ?>
-                                    <?php echo round($telemetryPackets[0]->getValue(3), 2); ?> <?php echo htmlspecialchars($telemetryPackets[0]->getValueUnit(3)); ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                              </td>
-                          </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(4)); ?>:</td>
-                              <td>
-                                <?php if ($telemetryPackets[0]->val4 !== null) : ?>
-                                    <?php echo round($telemetryPackets[0]->getValue(4), 2); ?> <?php echo htmlspecialchars($telemetryPackets[0]->getValueUnit(4)); ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                              </td>
-                          </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName(5)); ?>:</td>
-                              <td>
-                                <?php if ($telemetryPackets[0]->val5 !== null) : ?>
-                                    <?php echo round($telemetryPackets[0]->getValue(5), 2); ?> <?php echo htmlspecialchars($telemetryPackets[0]->getValueUnit(5)); ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                              </td>
-                          </tr>
+                        <?php endfor; ?>
                       </tbody>
                   </table>
               </div>
@@ -312,41 +275,16 @@
                               <td class="telemetrytime">
                                   <?php echo ($packetTelemetry->wxRawTimestamp != null?$packetTelemetry->wxRawTimestamp:$packetTelemetry->timestamp); ?>
                               </td>
+                            <?php for ($x = 1; $x <= 5; $x++): ?>
+                              <?php $converted = universalDataUnitConvert(round($packetTelemetry->getValue($x), 2), $packetTelemetry->getValueUnit($x)); ?>
                               <td>
-                                  <?php if ($packetTelemetry->val1 !== null) : ?>
-                                      <?php echo round($packetTelemetry->getValue(1), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(1)); ?>
+                                  <?php if ($packetTelemetry->{"val$x"}  !== null) : ?>
+                                      <?php echo $converted['value']; ?> <?php echo htmlspecialchars($converted['unit']); ?>
                                   <?php else : ?>
                                       -
                                   <?php endif; ?>
                               </td>
-                              <td>
-                                  <?php if ($packetTelemetry->val2 !== null) : ?>
-                                      <?php echo round($packetTelemetry->getValue(2), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(2)); ?>
-                                  <?php else : ?>
-                                      -
-                                  <?php endif; ?>
-                              </td>
-                              <td>
-                                  <?php if ($packetTelemetry->val3 !== null) : ?>
-                                      <?php echo round($packetTelemetry->getValue(3), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(3)); ?>
-                                  <?php else : ?>
-                                      -
-                                  <?php endif; ?>
-                              </td>
-                              <td>
-                                  <?php if ($packetTelemetry->val4 !== null) : ?>
-                                      <?php echo round($packetTelemetry->getValue(4), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(4)); ?>
-                                  <?php else : ?>
-                                      -
-                                  <?php endif; ?>
-                              </td>
-                              <td>
-                                  <?php if ($packetTelemetry->val5 !== null) : ?>
-                                      <?php echo round($packetTelemetry->getValue(5), 2); ?> <?php echo htmlspecialchars($packetTelemetry->getValueUnit(5)); ?>
-                                  <?php else : ?>
-                                      -
-                                  <?php endif; ?>
-                              </td>
+                            <?php endfor; ?>
                           </tr>
 
                       <?php endforeach; ?>

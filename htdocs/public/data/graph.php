@@ -32,9 +32,9 @@ if ($station->isExistingObject()) {
       // Ajax graph data
       if ($graphIdx > 0) {
         $response = array_merge($response, $telemetryColors[$graphIdx]);
-        $response['label'] = $latestPacketTelemetry->getValueParameterName($graphIdx);
+        $response['label'] = $latestPacketTelemetry->getValueParameterName($graphIdx) . ' (' . universalDataUnitConvert(round($latestPacketTelemetry->getValue($graphIdx), 2), $latestPacketTelemetry->getValueUnit($graphIdx))['unit'] . ')';
         foreach ($telemetryPackets as $packetTelemetry) {
-            $response['data'][] = array('x' => ($packetTelemetry->wxRawTimestamp != null ? $packetTelemetry->wxRawTimestamp : $packetTelemetry->timestamp) * 1000, 'y' => ($packetTelemetry->val1 !== null) ? round($packetTelemetry->getValue($graphIdx), 2) : '');
+            $response['data'][] = array('x' => ($packetTelemetry->wxRawTimestamp != null ? $packetTelemetry->wxRawTimestamp : $packetTelemetry->timestamp) * 1000, 'y' => ($packetTelemetry->{"val$graphIdx"} !== null) ? universalDataUnitConvert(round($packetTelemetry->getValue($graphIdx), 2), $packetTelemetry->getValueUnit($graphIdx))['value'] : '');
         }
         $response['oldest_timestamp'] = $response['data'][0]['x'] / 1000;
         $response['latest_timestamp'] = $response['data'][sizeof($response['data'])-1]['x'] / 1000;
@@ -81,7 +81,6 @@ if ($station->isExistingObject()) {
 
       // Ajax graph data
       if ($graphIdx > 0) {
-        $response['label'] = $graphLabels[$graphIdx];
         switch ($graphIdx) {
           case 0:
             break;
@@ -91,6 +90,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#2E2EFE';
             $response['backgroundColor'] = '#81BEF7';
+            $response['label'] = $graphLabels[$graphIdx] . ' (°' . (isImperialUnitUser() ? 'F' : 'C') . ')';
             break;
           case 2: // Humidity
             foreach ($weatherPackets as $packetWeather) {
@@ -98,6 +98,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#31B404';
             $response['backgroundColor'] = '#3ADF00';
+            $response['label'] = $graphLabels[$graphIdx] . ' (%)';
             break;
           case 3: // Pressure
             foreach ($weatherPackets as $packetWeather) {
@@ -105,6 +106,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#DF0101';
             $response['backgroundColor'] = '#FA5858';
+            $response['label'] = $graphLabels[$graphIdx] . ' (' . (isImperialUnitUser() ? 'inHg' : 'hPa') . ')';
             break;
           case 4: // Rain - Last hour
             if ($weatherPackets[0]->rain_1h !== null) {
@@ -114,6 +116,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#31B404';
             $response['backgroundColor'] = '#3ADF00';
+            $response['label'] = $graphLabels[$graphIdx] . ' (' . (isImperialUnitUser() ? 'in' : 'mm') . ')';
             break;
           case 5: // Rain - Last 24 hours
             if ($weatherPackets[0]->rain_24h !== null) {
@@ -123,6 +126,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#31B404';
             $response['backgroundColor'] = '#3ADF00';
+            $response['label'] = $graphLabels[$graphIdx] . ' (' . (isImperialUnitUser() ? 'in' : 'mm') . ')';
             break;
           case 6: // Rain - Since midnight
             if ($weatherPackets[0]->rain_since_midnight !== null) {
@@ -132,6 +136,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#31B404';
             $response['backgroundColor'] = '#3ADF00';
+            $response['label'] = $graphLabels[$graphIdx] . ' (' . (isImperialUnitUser() ? 'in' : 'mm') . ')';
             break;
           case 7: // Wind speed
             foreach ($weatherPackets as $packetWeather) {
@@ -143,6 +148,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#0174DF';
             $response['backgroundColor'] = '#81BEF7';
+            $response['label'] = $graphLabels[$graphIdx] . ' (' . (isImperialUnitUser() ? 'mph' : 'm/s') . ')';
             break;
           case 8: // Wind direction
             foreach ($weatherPackets as $packetWeather) {
@@ -154,6 +160,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#0174DF';
             $response['backgroundColor'] = '#81BEF7';
+            $response['label'] = $graphLabels[$graphIdx] . ' (degrees)';
             break;
           case 9: // Luminosity
             foreach ($weatherPackets as $packetWeather) {
@@ -161,6 +168,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#FF0080';
             $response['backgroundColor'] = '#B4045F';
+            $response['label'] = $graphLabels[$graphIdx] . ' (lux)';
             break;
           case 10: // Snow
             foreach ($weatherPackets as $packetWeather) {
@@ -168,6 +176,7 @@ if ($station->isExistingObject()) {
             }
             $response['borderColor'] = '#A4A4A4';
             $response['backgroundColor'] = '#E0ECF8';
+            $response['label'] = $graphLabels[$graphIdx] . ' (' . (isImperialUnitUser() ? 'in' : 'mm') . ')';
             break;
         }
         $response['oldest_timestamp'] = $response['data'][0]['x'] / 1000;
