@@ -1,9 +1,6 @@
 import logging
-from twisted.python import log
 import aprslib
 import collections
-import psycopg2
-import datetime
 import time
 import re
 
@@ -62,9 +59,10 @@ class AprsISConnection(aprslib.IS):
         """
         def filterCallback(line):
             try:
+                # decode first then replace
+                line = line.decode()
                 line = line.replace('\x00', '')
-                line.decode('utf-8', 'replace')
-            except UnicodeError:
+            except UnicodeError as e:
                 # string is not UTF-8
                 return
 
@@ -96,6 +94,18 @@ class AprsISConnection(aprslib.IS):
             except:
                 return False
 
+            # Divide into body and head
+            try:
+                (head, body) = other.split(':', 1)
+            except:
+                return False
+
+            if len(body) == 0:
+                return False
+
+            packetType = body[0]
+            body = body[1:]
+
             # Try to find turn rate and reduce frequency limit if high turn rate
             frequencyLimitToApply = int(self.frequencyLimit)
             if (self.sourceId == 5) :
@@ -108,13 +118,13 @@ class AprsISConnection(aprslib.IS):
                     pass
 
             latestTimestampOnMap = 0
-            if (name in self.stationHashTimestamps):
-                latestTimestampOnMap = self.stationHashTimestamps[name]
+            if (name + packetType in self.stationHashTimestamps):
+                latestTimestampOnMap = self.stationHashTimestamps[name + packetType]
 
                 if (((int(time.time()) - 1) - frequencyLimitToApply) < latestTimestampOnMap):
                     # This sender is sending faster than config limit
                     return True
-            self.stationHashTimestamps[name] = int(time.time()) - 1
+            self.stationHashTimestamps[name + packetType] = int(time.time()) - 1
             self._cacheMaintenance()
         return False
 
