@@ -37,7 +37,7 @@
           <td colspan="2"><hr /></td>
         </tr>
         <tr>
-          <td>Total Packets:</td>
+          <td>Archived Packets:</td>
           <td id="system_packets"></td>
         </tr>
         <tr>
@@ -88,7 +88,7 @@
       </thead>
         <tbody>
         <tr>
-          <td>Total Packets:</td>
+          <td>RAW Packets:</td>
           <td id="today_packets"></td>
         </tr>
         <tr>

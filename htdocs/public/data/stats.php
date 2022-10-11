@@ -96,8 +96,7 @@ $response['today_telemetrypackets'] = number_format(intval($stmt->fetchColumn())
 // Total WEATHER packets
 $sql = "SELECT n_live_tup  FROM pg_stat_all_tables WHERE relname = 'packet${tabletoday}_weather'";
 $stmt = $pdo->prepareAndExec($sql);
-$response['today_weatherpackets'] = $response['system_weatherpackets'] = number_format(intval($stmt->fetchColumn()));
-
+$response['today_weatherpackets'] = number_format(intval($stmt->fetchColumn()));
 
 header('Content-type: application/json');
 echo json_encode($response);
