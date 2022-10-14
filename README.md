@@ -6,6 +6,10 @@ Tools included are an APRS data collector, a websocket server, a javascript libr
 
 Please note that it is almost 10 years since I wrote the majority of the code, and when the code was written, it was never intended to be published ...
 
+## Live Demo Site
+
+The latest release of this development branch can be viewed at https://aprs.n2rwe.com
+
 ## What is APRS?
 APRS (Automatic Packet Reporting System) is a digital communications system that uses packet radio to send real time tactical information. The APRS network is used by ham radio operators all over the world.
 
