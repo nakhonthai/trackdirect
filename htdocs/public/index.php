@@ -156,6 +156,7 @@
             trackdirect.addListener("trackdirect-init-done", function () {
               trackdirect._websocket.addListener("server-timestamp-response", function (data) {
                $('#svrclock').text(moment(new Date(1000 * data.timestamp)).format('LTS'));
+               liveData.init();
               });
             });
           } else {

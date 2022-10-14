@@ -17,6 +17,7 @@
             <a class="tdlink" title="Weather" href="/views/weather.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Weather</a>
             <a class="tdlink" title="Telemetry" href="/views/telemetry.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Telemetry</a>
             <a class="tdlink" title="Raw Packets" href="/views/raw.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Raw Packets</a>
+            <a class="tdlink" title="Live Feed" href="/views/live.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Live Feed</a>
             <a class="tdlink" title="Messages &amp; Bulletins" href="/views/messages.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Messages &amp; Bulletins</a>
         </div>
 
@@ -114,7 +115,7 @@
 
                 <div>
                     <div class="overview-content-summary-hr">Latest Packet:</div>
-                    <div class="overview-content-summary-cell-type overview-content-summary-indent"><?php echo $latestPacket->getPacketTypeName(); ?> Packet</div>
+                    <div class="overview-content-summary-cell-type overview-content-summary-indent" id="packet_type_name"><?php echo $latestPacket->getPacketTypeName(); ?> Packet</div>
                 </div>
 
                 <?php $latestPacketSender = SenderRepository::getInstance()->getObjectById($latestPacket->senderId); ?>
@@ -152,7 +153,7 @@
 
                 <div>
                     <div class="overview-content-summary-hr-indent">Path:</div>
-                    <div class="overview-content-summary-cell-path overview-content-summary-indent" title="Latest path"><?php echo $latestPacket->rawPath; ?></div>
+                    <div class="overview-content-summary-cell-path overview-content-summary-indent" title="Latest path" id="raw_path"><?php echo $latestPacket->rawPath; ?></div>
                 </div>
 
                 <?php if ($latestPacket->comment != '') : ?>
@@ -205,7 +206,7 @@
                 <?php if ($station->latestWeatherPacketComment != '') : ?>
                     <div>
                         <div class="overview-content-summary-hr-indent">Comment/Software:</div>
-                        <div class="overview-content-summary-cell-time overview-content-summary-indent" title="Weather packet comment/software">
+                        <div id="latest-wx-comment" class="overview-content-summary-cell-time overview-content-summary-indent" title="Weather packet comment/software">
                             <?php echo htmlentities($station->latestWeatherPacketComment); ?><br/>
                         </div>
                     </div>
@@ -275,7 +276,7 @@
                             <?php if ($latestConfirmedPacket->speed != '') : ?>
                             <div>
                                 <div class="overview-content-summary-hr-indent">Speed:</div>
-                                <div title="Latest speed" class="overview-content-summary-indent">
+                                <div title="Latest speed" class="overview-content-summary-indent" id="latest_speed">
                                     <?php if (isImperialUnitUser()) : ?>
                                         <?php echo round(convertKilometerToMile($latestConfirmedPacket->speed), 2); ?> mph
                                     <?php else : ?>
@@ -288,14 +289,14 @@
                             <?php if ($latestConfirmedPacket->course != '') : ?>
                             <div>
                                 <div class="overview-content-summary-hr-indent">Course:</div>
-                                <div title="Latest course" class="overview-content-summary-indent"><?php echo $latestConfirmedPacket->course; ?>&deg;</div>
+                                <div title="Latest course" class="overview-content-summary-indent" id="latest_course"><?php echo $latestConfirmedPacket->course; ?>&deg;</div>
                             </div>
                             <?php endif;?>
 
                             <?php if ($latestConfirmedPacket->altitude != '') : ?>
                             <div>
                                 <div class="overview-content-summary-hr-indent">Altitude:</div>
-                                <div title="Latest altitude" class="overview-content-summary-indent">
+                                <div title="Latest altitude" class="overview-content-summary-indent" id="latest_altitude">
                                     <?php if (isImperialUnitUser()) : ?>
                                         <?php echo round(convertMeterToFeet($latestConfirmedPacket->altitude), 2); ?> ft
                                     <?php else : ?>
@@ -393,7 +394,7 @@
                     <div class="overview-content-packet-frequency" title="Latest bulletin"><span><?php echo $stationLatestBulletinPacket[0]->to_call; ?>: <?php echo $stationLatestBulletinPacket[0]->comment; ?></span> (<span id="bulletin-timestamp"><?php echo $stationLatestBulletinPacket[0]->timestamp; ?></span>)</div>
                 </div>
             <?php endif; ?>
-
+            <br/><span style="float:left;width:400px;"><img src="/public/images/dotColor3.svg" style="height:24px;vertical-align:middle;" id="live-img" /><span id="live-status" style="vertical-align:middle;">Waiting for connection...</span></span>
             <div class="overview-content-divider"></div>
         </div>
 
@@ -539,6 +540,7 @@
     <script>
         $(document).ready(function() {
             var locale = window.navigator.userLanguage || window.navigator.language;
+            latest_packet_timestamp = <?php echo $station->latestPacketTimestamp; ?>;
             moment.locale(locale);
 
             $('#overview-content-comment, #overview-content-beacon, #overview-content-status').each(function() {
@@ -565,6 +567,9 @@
                         }
                     });
                 <?php endif; ?>
+                window.trackdirect.addListener("trackdirect-init-done", function () {
+                  window.liveData.start("<?php echo $station->name;?>", <?php echo $station->latestPacketTimestamp; ?>, 'overview');
+                });
             }
             loadOverviewData(<?php echo $station->id ?>);
         });

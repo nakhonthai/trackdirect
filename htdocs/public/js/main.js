@@ -126,6 +126,226 @@ function loadOverviewData(id) {
   });
 }
 
+
+var liveData = {
+  _stationName: null,
+  _initComplete: false,
+
+  _activeModule: null,
+  _activeCallback: null,
+
+  _lastPacketTimestamp: 0,
+
+  _timerInterval: null,
+  _spinnerInterval: null,
+
+  /**
+   * Initialize Live Data
+   */
+  init: function () {
+    if (!this._initComplete) {
+      window.trackdirect._websocket.addListener("aprs-packet", (packetData) => {
+        if (this._stationName == null || this._activeCallback == null) return;
+
+        var packet = new trackdirect.models.Packet(packetData);
+        if (packet.station_name != this._stationName || packet.timestamp <= this._lastPacketTimestamp) return;
+
+        this._activeCallback(packet);
+        this._lastPacketTimestamp = packet.timestamp;
+      });
+      this._initComplete = true;
+    }
+  },
+
+  /**
+   * Start Live Data Updates
+   * @param {string} stationName
+   * @param {string} moduleName
+   */
+  start: function (stationName, lastPacketTimestamp, moduleName) {
+    this._stationName = stationName;
+    this._lastPacketTimestamp = lastPacketTimestamp;
+
+    if (this._timerInterval != null) {
+      clearInterval(this._timerInterval);
+      this._timerInterval = null;
+    }
+    this._stopSpinner();
+
+    if (moduleName == 'overview') this.overviewStart();
+    if (moduleName == 'wxcurrent') this.weatherCurrent();
+    if (moduleName == 'livefeed') this.liveFeed();
+
+    if (window.trackdirect.getTimeTravelTimestamp()==null) {
+      $("#live-img").attr("src", "/public/images/dotColor4.svg");
+      $("#live-status").text("Connected to server, live updates enabled.");
+    } else {
+      $("#live-img").attr("src", "/public/images/dotColor2.svg");
+      $("#live-status").text("Time travel active, live updates unavailable.");
+    }
+  },
+
+  /**
+   * Stop Live Data Updates
+   */
+  stop: function () {
+    this._activeModule = null;
+    this._stationName = null;
+    if (this._timerInterval != null) {
+      clearInterval(this._timerInterval);
+      this._timerInterval = null;
+    }
+    this._stopSpinner();
+  },
+
+  /**
+   * Start updating the text progress element
+   */
+  _startSpinner: function () {
+    var spinPos = 0;
+    this._spinnerInterval = setInterval(function(){
+      const s = '|/-\\';
+      $('#spinner').text(s.charAt(spinPos));
+      if (spinPos++ == 3) spinPos = 0;
+    }, 500);
+  },
+
+  /**
+   * Stop updating the text progress element
+   */
+  _stopSpinner: function () {
+    if (this._spinnerInterval != null) {
+      clearInterval(this._spinnerInterval);
+      this._spinnerInterval = null;
+    }
+  },
+
+  /**
+   * Start live Updates for overview.php
+   */
+  overviewStart: function () {
+    this._activeModule = "overview";
+    this._timerInterval = setInterval(function(){
+      if (this._lastPacketTimestamp > 0) {
+          $('#latest-timestamp-age').html(moment(new Date(1000 * this._lastPacketTimestamp)).locale('en').fromNow());
+      }
+    }, 5000);
+
+    this._activeCallback = function(packet) {
+      if (this._inOverview == false) return;
+      $("#packet_type_name, #latest-timestamp, #latest-timestamp-age, #raw_path, #latest-packet-comment").fadeOut(250, function(){
+        $("#packet_type_name").text(packet.getPacketTypeName()+' Packet');
+        $("#latest-timestamp").text(moment(new Date(1000 * packet.timestamp)).format('L LTSZ'));
+        $('#latest-timestamp-age').html(moment(new Date(1000 * packet.timestamp)).locale('en').fromNow());
+        $("#raw_path").text(packet.raw_path);
+        $("#latest-packet-comment").text(packet.comment);
+      }).fadeIn(250);
+      if (packet.packet_type_id == 1) {
+        $("#overview-content-latest-position, #position-timestamp").fadeOut(250, function(){
+          $("#overview-content-latest-position").text(Math.round(packet.latitude * 100000)/100000 + ', ' + Math.round(packet.longitude * 100000)/100000);
+          $("#position-timestamp").text("(Received in latest packet)");
+        }).fadeIn(250);
+        if (packet.course != null) $("#latest_course").fadeOut(250, function(){ $("#latest_course").html(packet.course + " &deg;").fadeIn(250);});
+        if (packet.speed != null) $("#latest_speed").fadeOut(250, function(){ $("#latest_speed").html(trackdirect.isImperialUnits() ?  Math.round(trackdirect.services.imperialConverter.convertKilometerToMile(packet.speed)*100)/100 + " mph" : Math.round(packet.speed*100)/100 + " km/h").fadeIn(250);});
+        if (packet.altitude != null) $("#latest_altitude").fadeOut(250, function(){ $("#latest_altitude").html(trackdirect.isImperialUnits() ?  Math.round(trackdirect.services.imperialConverter.convertMeterToFeet(packet.altitude)*100)/100 + " ft" : Math.round(packet.altitude*100)/100 + " m").fadeIn(250);});
+      }
+      if (packet.packet_type_id == 3) {
+        $("#weather-timestamp, #latest-wx-comment").fadeOut(250, function(){
+          $("#weather-timestamp").text(moment(new Date(1000 * packet.timestamp)).format('L LTSZ'));
+          $("#latest-wx-comment").text(packet.comment);
+        }).fadeIn(250);
+      }
+
+    };
+  },
+
+  /**
+   * Start live Updates for weather.php
+   */
+  weatherCurrent: function () {
+    this._activeModule = "wxcurrent";
+    this._activeCallback = function(packet) {
+      if (packet.packet_type_id == 3) {
+        $("#latest-timestamp").fadeOut(250, function(){
+          $("#latest-timestamp").text(moment(new Date(1000 * packet.timestamp)).format('L LTS'));
+        }).fadeIn(250);
+        $.getJSON('/data/data.php?id=' + packet.station_id + '&imperialUnits='+(trackdirect.isImperialUnits() ? '1':'0')+'&module=weather&command=getLatestWeather').done(function(response) {
+          $.each(response.data, function(key, val) {
+              $("#"+key.replace('_', '-')+"-gauge").attr("data-value", val);
+          });
+        });
+      }
+    };
+  },
+
+  /**
+   * Start live Updates for telemetry.php
+   */
+  telemetryCurrent: function () {
+    this._activeModule = "telemcurrent";
+    this._activeCallback = function(packet) {
+      if (packet.packet_type_id == 6) {
+        $("#latest-timestamp").fadeOut(250, function(){
+          $("#latest-timestamp").text(moment(new Date(1000 * packet.timestamp)).format('L LTS'));
+        }).fadeIn(250);
+        $.getJSON('/data/data.php?id=' + packet.station_id + '&imperialUnits='+(trackdirect.isImperialUnits() ? '1':'0')+'&module=telemetry&command=getLatestTelemetry').done(function(response) {
+          $.each(response.data.values, function(key, val) {
+              $('#telem-' + key + '-name').text(val.name);
+              $('#telem-' + key + '-value').text(val.value);
+          });
+          $.each(response.data.bits, function(key, val) {
+              $('#bits-' + key + '-name').text(val.name);
+              $('#bits-' + key + '-value').text(val.value);
+          });
+        });
+      }
+    };
+  },
+
+  /**
+   * Start live Updates for live.php
+   */
+  liveFeed: function () {
+    this._activeModule = "livefeed";
+
+    this._activeCallback = function(packet) {
+      var html = '<div class="raw-hidden"><span class="raw-packet-timestamp">' + moment(new Date(1000 * packet.timestamp)).format('L LTSZ') + '</span>: ';
+      if (packet.map_id == 3 || packet.map_id == 6) html += '<span class="raw-packet-error parsepkt">';
+      else html += '<span class="parsepkt">';
+
+      if (packet.raw != null) {
+        const packet_raw = packet.raw;
+        const p1 = packet_raw.split(">");
+        const p2 = p1[1].split(":");
+        const p3 = p2[0].split(",");
+        p2.shift();
+        p3.forEach(function(v, k, p3) {
+          if (k==0) return;
+          if (v.indexOf('WIDE') == -1 && v.indexOf('RELAY') == -1 && v.indexOf('TRACE') == -1 && v.indexOf('qA') == -1 && v.indexOf('TCP') == -1 && v.indexOf('T2') == -1 && v.indexOf('CWOP') == -1 && v.indexOf('APRSFI') == -1) {
+            p3[k] = '<b><a class="tdlink" onclick="javascript:loadView(this.href);return false;" href="overview.php?c='+encodeURI(v.replace('*', ''))+'&imperialUnits='+(trackdirect.isImperialUnits() ? '1':'0')+'">'+v+'</a></b>';
+          }
+        });
+        html += '<b><a class="tdlink" onclick="javascript:loadView(this.href);return false;" href="overview.php?id=' + packet.station_id + '&imperialUnits='+(trackdirect.isImperialUnits() ? '1':'0')+'">'+p1[0]+'</a></b>&gt;'+p3.join(',')+':' +p2.join(':');
+
+        if (packet.map_id == 3) html += '&nbsp;<b>[Duplicate]</b>';
+        if (packet.map_id == 6) html += '&nbsp;<b>[Received in wrong order]</b>';
+        html += ' (Type: ' + packet.getPacketTypeName() + ')</span></div>';
+      } else {
+        html += ' ' + packet.station_name + '&gt;' + packet.raw_path;
+      }
+
+      $("#live-content").prepend(html);
+      $(".raw-hidden").fadeIn(250);
+    };
+    $("#output-status").html('Listening for packets to/from ' + this._stationName + '... [<span id="spinner"></span>]');
+    this._startSpinner();
+  }
+};
+
+
+
+
+
 function initGraph(cnt) {
   for (let i = 1; i <= cnt; i++) {
     window['ctx_'+i] = document.getElementById('graph_'+i);
@@ -136,10 +356,16 @@ function initGraph(cnt) {
           datasets: [{
               label: "",
               data: [],
+              radius: 0,
               borderWidth: 1
           }]
       },
       options: {
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         maintainAspectRatio: true,
         scales: {
           x: {
@@ -209,7 +435,6 @@ function loadView(url) {
         history.replaceState(null, "", requestUrl);
         var title = $('#td-modal-content title').text();
         $("#td-modal-title").text(title);
-
         $("#td-modal-content .tdlink").unbind('click').bind('click', function(e) {
           loadView(this.href);
           e.preventDefault();
@@ -229,6 +454,7 @@ jQuery(document).ready(function ($) {
 jQuery(document).ready(function ($) {
   $("#td-modal-close").bind('click', function(e) {
     $('#td-modal').hide();
+    liveData.stop();
     history.replaceState(null, "", "/");
   });
 });

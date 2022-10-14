@@ -42,6 +42,7 @@
             <span>Weather</span>
             <a class="tdlink" title="Telemetry" href="/views/telemetry.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Telemetry</a>
             <a class="tdlink" title="Raw Packets" href="/views/raw.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Raw Packets</a>
+            <a class="tdlink" title="Live Feed" href="/views/live.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Live Feed</a>
             <a class="tdlink" title="Messages &amp; Bulletins" href="/views/messages.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Messages &amp; Bulletins</a>
         </div>
 
@@ -63,7 +64,7 @@
                     <?php if ($format == 'graph'): ?>
                       <span style="float:left;">Displaying data from <span id="oldest-timestamp" style="font-weight:bold;"></span> to <span id="latest-timestamp" style="font-weight:bold;"></span>.  <span id="records"></span> (max 1000)</span>
                     <?php elseif ($format == 'current'): ?>
-                      <span style="float:left;">Displaying current weather conditions as of <span id="latest-timestamp" style="font-weight:bold;"><?php echo ($weatherPackets[0]->wxRawTimestamp != null?$weatherPackets[0]->wxRawTimestamp:$weatherPackets[0]->timestamp); ?></span>.
+                      <span style="">Current weather conditions reported as of <span id="latest-timestamp" style="font-weight:bold;"><?php echo ($weatherPackets[0]->wxRawTimestamp != null?$weatherPackets[0]->wxRawTimestamp:$weatherPackets[0]->timestamp); ?></span>.
                     <?php else: ?>
                       <span style="float:left;">Displaying <?php echo $offset+1; ?> - <?php echo ($offset+$rows < $count ? $offset+$rows : $count); ?> of <?php echo $count ?> weather records.  Data retrieved in <?php echo round($dbtime, 3) ?> seconds.</span>
                     <?php endif; ?>
@@ -76,6 +77,7 @@
                   </script>
 
             </div>
+            <?php if ($format == 'current'): ?><span style="float:right;"><img src="/public/images/dotColor3.svg" style="height:24px;vertical-align:middle;" id="live-img" /><span id="live-status" style="vertical-align:middle;">Waiting for connection...</span></span><?php endif; ?>
 
             <?php if ($format != 'current'): ?>
               <form id="wxhistory-form" style="float:right;line-height: 28px">
@@ -259,9 +261,9 @@
               <?php endif; ?>
               </div>
 
-              <?php function rainGraph($title, $value) { ?>
+              <?php function rainGauge($id, $title, $value) { ?>
                 <!-- <?php echo $title ?> gauge -->
-                <canvas data-type="linear-gauge" id="<?php echo strtolower(str_replace(' ', '', $title)); ?>-gauge" class="weather-gauge"
+                <canvas data-type="linear-gauge" id="<?php echo $id; ?>-gauge" class="weather-gauge"
                   data-title="<?php echo $title ?>"
                   data-units="<?php echo isImperialUnitUser() ? 'in' : 'mm'?>"
                   data-max-value="<?php echo isImperialUnitUser() ? '4' : '120'?>"
@@ -272,14 +274,14 @@
                                     {"from": <?php echo isImperialUnitUser() ? '3' : '90'?>, "to": <?php echo isImperialUnitUser() ? '4' : '120'?>, "color": "rgba(213, 62, 62, .6)"}]'
                   data-value="<?php echo $value ?>"
                   ></canvas>
-                  <script>rainGaugeParams('<?php echo strtolower(str_replace(' ', '', $title)); ?>-gauge')</script>
+                  <script>rainGaugeParams('<?php echo $id; ?>-gauge')</script>
               <?php } ?>
               <?php if ($weatherPackets[0]->rain_1h !== null || $weatherPackets[0]->rain_24h !== null || $weatherPackets[0]->rain_since_midnight !== null): ?>
                 <div class="gauge-cluster">
                   <?php
-                   if ($weatherPackets[0]->rain_1h !== null) rainGraph('Rain Last Hour', isImperialUnitUser() ? round(convertMmToInch($weatherPackets[0]->rain_1h), 2) : round($weatherPackets[0]->rain_1h, 2));
-                   if ($weatherPackets[0]->rain_24h !== null) rainGraph('Rain Last 24 Hours', isImperialUnitUser() ? round(convertMmToInch($weatherPackets[0]->rain_24h), 2) : round($weatherPackets[0]->rain_24h, 2));
-                   if ($weatherPackets[0]->rain_since_midnight !== null) rainGraph('Rain Since Midnight', isImperialUnitUser() ? round(convertMmToInch($weatherPackets[0]->rain_since_midnight), 2) : round($weatherPackets[0]->rain_since_midnight, 2));
+                   if ($weatherPackets[0]->rain_1h !== null) rainGauge('rain_1h', 'Rain Last Hour', isImperialUnitUser() ? round(convertMmToInch($weatherPackets[0]->rain_1h), 2) : round($weatherPackets[0]->rain_1h, 2));
+                   if ($weatherPackets[0]->rain_24h !== null) rainGauge('rain_24h', 'Rain Last 24 Hours', isImperialUnitUser() ? round(convertMmToInch($weatherPackets[0]->rain_24h), 2) : round($weatherPackets[0]->rain_24h, 2));
+                   if ($weatherPackets[0]->rain_since_midnight !== null) rainGauge('rain_since_midnight', 'Rain Since Midnight', isImperialUnitUser() ? round(convertMmToInch($weatherPackets[0]->rain_since_midnight), 2) : round($weatherPackets[0]->rain_since_midnight, 2));
                   ?>
                 </div>
               <?php endif; ?>
@@ -528,6 +530,9 @@
                         }
                     });
                 <?php endif; ?>
+                window.trackdirect.addListener("trackdirect-init-done", function () {
+                  window.liveData.start("<?php echo $station->name;?>", <?php echo $station->latestPacketTimestamp; ?>, 'wxcurrent');
+                });
             }
         });
     </script>

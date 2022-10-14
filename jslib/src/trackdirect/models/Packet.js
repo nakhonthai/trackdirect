@@ -626,3 +626,55 @@ trackdirect.models.Packet.prototype.getLinkifiedRawPath = function () {
   }
   return null;
 };
+
+/**
+ * Returns packet type as a string
+ * @return {string}
+ */
+trackdirect.models.Packet.prototype.getPacketTypeName = function () {
+  if (
+    typeof this.packet_type_id !== "undefined" &&
+    this.packet_type_id !== null &&
+    this.packet_type_id !== ""
+  ) {
+
+    switch (parseInt(this.packet_type_id)) {
+      case 1:
+        return 'Position';
+        break;
+      case 2:
+        return 'Direction';
+        break;
+      case 3:
+        return 'Weather';
+        break;
+      case 4:
+        return 'Object';
+        break;
+      case 5:
+        return 'Item';
+        break;
+      case 6:
+        return 'Telemetry';
+        break;
+      case 7:
+        return 'Message';
+        break;
+      case 8:
+        return 'Query';
+        break;
+      case 9:
+        return 'Response';
+        break;
+      case 10:
+        return 'Status';
+        break;
+      case 11:
+        return 'Other';
+        break;
+      default:
+        return 'Unknown';
+        break;
+    }
+  }
+};

@@ -237,6 +237,10 @@ a {
   display: block;
 }
 
+#td-modal-content {
+  height: 100%;
+}
+
 /* Modal Content */
 .modal-content, .modal-long-content {
   background-color: #fff;
@@ -301,11 +305,16 @@ a {
 }
 
 input[type=text], select, textarea {
-  padding: 10px;
+  padding: 2px;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
-  resize: vertical
+}
+
+select {
+  -webkit-padding-before: 4px;
+  -webkit-padding-after: 5px;
+  -webkit-appearance: none;
 }
 
 input[type=text] {
@@ -390,6 +399,7 @@ input[type=submit]:hover {
 
 .modal-inner-content {
   max-width: 1100px;
+  height: 100%;
 
   padding-top: 10px;
   padding-left: 30px;
@@ -557,6 +567,50 @@ input[type=submit]:hover {
   height: 20px;
 }
 
+#titlebar {
+  width: calc(100% - 10px);
+  padding:4px;
+  vertical-align: middle;
+
+  background-color:#bbbbbb;
+  border:1px solid black;
+}
+
+#titlebar img {
+  height:24px;
+  vertical-align: middle;
+}
+
+#titlebar span {
+  vertical-align: middle;
+}
+
+#titlebar form a b {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px;
+  line-height:0px;
+  height:16px;
+  color: white;
+  background-color: #4CAF50;
+}
+
+#raw-content-output, #live-content-output {
+  background-color: black;
+  color:#dddddd;
+  padding:6px;
+  overflow: scroll;
+}
+
+#raw-content-output {
+  height:calc(100% - 236px);
+}
+
+#live-content-output {
+  height:calc(100% - 169px);
+}
+
 #raw-content-output p {
     white-space: nowrap;
     margin-top: 0px;
@@ -569,6 +623,11 @@ input[type=submit]:hover {
 
 #raw-content-output a {
     font-weight: bold;
+}
+
+.raw-hidden {
+  padding: 8px 4px 4px 4px;
+  display: none;
 }
 
 .raw-packet-warning {

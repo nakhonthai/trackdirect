@@ -123,10 +123,15 @@
         });
 
         $('#station-search-form').bind('submit',function(e) {
-            var q = $('#station-search-form-q').val();
-            var seconds = $('#station-search-form-seconds').val();
-	    loadView('/views/search.php?imperialUnits=<?php echo $_GET['imperialUnits'] ?? '0'; ?>&q=' + q + '&seconds=' + seconds);
-            e.preventDefault();
+          var q = $('#station-search-form-q').val();
+          var seconds = $('#station-search-form-seconds').val();
+          loadView('/views/search.php?imperialUnits=<?php echo $_GET['imperialUnits'] ?? '0'; ?>&q=' + q + '&seconds=' + seconds);
+          e.preventDefault();
+        });
+
+        $(".tdlink").bind('click', function(e) {
+          loadView(this.href);
+          e.preventDefault();
         });
     });
 </script>

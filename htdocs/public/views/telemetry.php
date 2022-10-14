@@ -42,6 +42,7 @@
             <a class="tdlink" title="Weather" href="/views/weather.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Weather</a>
             <span>Telemetry</span>
             <a class="tdlink" title="Raw Packets" href="/views/raw.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Raw Packets</a>
+            <a class="tdlink" title="Live Feed" href="/views/live.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Live Feed</a>
             <a class="tdlink" title="Messages &amp; Bulletins" href="/views/messages.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Messages &amp; Bulletins</a>
         </div>
 
@@ -66,9 +67,10 @@
                 <?php elseif ($format == 'table'): ?>
                   <span style="float:left;">Displaying <?php echo $offset+1; ?> - <?php echo ($offset+$rows < $count ? $offset+$rows : $count); ?> of <?php echo $count ?> telemetry records. Data retrieved in <?php echo round($dbtime, 3) ?> seconds.</span>
                 <?php else: ?>
-                  <span style="float:left;">Displaying latest telemetry as of <span class="telemetrytime" style="font-weight:bold;"><?php echo ($telemetryPackets[0]->wxRawTimestamp != null?$telemetryPackets[0]->wxRawTimestamp:$telemetryPackets[0]->timestamp); ?></span>. Data retrieved in <?php echo round($dbtime, 3) ?> seconds.</span>
+                  <span style="float:left;">Displaying latest telemetry as of <span id="latest-timestamp" class="telemetrytime" style="font-weight:bold;"><?php echo ($telemetryPackets[0]->wxRawTimestamp != null?$telemetryPackets[0]->wxRawTimestamp:$telemetryPackets[0]->timestamp); ?></span>. Data retrieved in <?php echo round($dbtime, 3) ?> seconds.</span>
                 <?php endif; ?>
             </div>
+            <?php if ($format == 'current'): ?><span style="float:right;"><img src="/public/images/dotColor3.svg" style="height:24px;vertical-align:middle;" id="live-img" /><span id="live-status" style="vertical-align:middle;">Waiting for connection...</span></span><?php endif; ?>
 
             <?php if ($format != 'current'): ?>
               <form id="telemhistory-form" style="float:right;line-height: 28px">
@@ -138,10 +140,10 @@
                       <tbody>
                         <?php for ($x = 1; $x <= 5; $x++): ?>
                           <tr>
-                              <td width="20%"><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName($x)); ?>:</td>
-                              <td>
-                                <?php if ($telemetryPackets[0]->{"val$x"} !== null): ?>
-                                  <?php $converted = universalDataUnitConvert(round($telemetryPackets[0]->getValue($x), 2), $telemetryPackets[0]->getValueUnit($x)); ?>
+                              <td id="telem-<?php echo $x; ?>-name" width="20%"><?php echo htmlspecialchars($latestPacketTelemetry->getValueParameterName($x)); ?>:</td>
+                              <td id="telem-<?php echo $x; ?>-value">
+                                <?php if ($latestPacketTelemetry->{"val$x"} !== null): ?>
+                                  <?php $converted = universalDataUnitConvert(round($latestPacketTelemetry->getValue($x), 2), $latestPacketTelemetry->getValueUnit($x)); ?>
                                   <?php echo $converted['value']; ?> <?php echo htmlspecialchars($converted['unit']); ?>
                                 <?php else : ?>
                                     -
@@ -155,7 +157,8 @@
 
               <br />
 
-              <div class="datagrid datagrid-telemetry1" style="max-width:1000px;">
+              <?php if ($latestPacketTelemetry->bits !== null): ?>
+                <div class="datagrid datagrid-telemetry1" style="max-width:1000px;">
                   <table style="width:100%;max-width:1000px;">
                       <thead>
                           <tr>
@@ -163,41 +166,16 @@
                           </tr>
                       </thead>
                       <tbody>
+                        <?php for ($x = 1; $x < 9; ++$x): ?>
                           <tr>
-                              <td width="20%"><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(1)); ?>:</td>
-                              <td><?php echo htmlspecialchars($telemetryPackets[0]->getBitLabel(1)); ?></td>
+                              <td id="bits-<?php echo $x; ?>-name" width="20%"><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName($x)); ?>:</td>
+                              <td id="bits-<?php echo $x; ?>-value"><?php echo htmlspecialchars($latestPacketTelemetry->getBitLabel($x)); ?></td>
                           </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(2)); ?>:</td>
-                              <td><?php echo htmlspecialchars($telemetryPackets[0]->getBitLabel(2)); ?></td>
-                          </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(3)); ?>:</td>
-                              <td><?php echo htmlspecialchars($telemetryPackets[0]->getBitLabel(3)); ?></td>
-                          </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(4)); ?>:</td>
-                              <td><?php echo htmlspecialchars($telemetryPackets[0]->getBitLabel(4)); ?></td>
-                          </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(5)); ?>:</td>
-                              <td><?php echo htmlspecialchars($telemetryPackets[0]->getBitLabel(5)); ?></td>
-                          </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(6)); ?>:</td>
-                              <td><?php echo htmlspecialchars($telemetryPackets[0]->getBitLabel(6)); ?></td>
-                          </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(7)); ?>:</td>
-                              <td><?php echo htmlspecialchars($telemetryPackets[0]->getBitLabel(7)); ?></td>
-                          </tr>
-                          <tr>
-                              <td><?php echo htmlspecialchars($latestPacketTelemetry->getBitParameterName(8)); ?>:</td>
-                              <td><?php echo htmlspecialchars($telemetryPackets[0]->getBitLabel(8)); ?></td>
-                          </tr>
+                        <?php endfor; ?>
                       </tbody>
                   </table>
-              </div>
+                </div>
+              <?php endif; ?>
             <?php endif; ?>
 
             <?php if ($pages > 1 && $format == 'table'): ?>
@@ -269,6 +247,7 @@
                           </tr>
                       </thead>
                       <tbody>
+
                       <?php foreach ($telemetryPackets as $packetTelemetry) : ?>
 
                           <tr>
@@ -488,6 +467,9 @@
                         }
                     });
                 <?php endif; ?>
+                window.trackdirect.addListener("trackdirect-init-done", function () {
+                  window.liveData.start("<?php echo $station->name;?>", <?php echo $station->latestPacketTimestamp; ?>, 'telemcurrent');
+                });
             }
 
         });
