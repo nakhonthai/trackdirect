@@ -122,7 +122,7 @@ class TrackDirectConfig(Singleton):
                 'websocket_server', 'aprs_port3').strip('"')
             self.websocketAprsSourceId3 = int(configParser.get(
                 'websocket_server', 'aprs_source_id3').strip('"'))
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        except (configparser.NoSectionError, configparser.NoOptionError):
             self.websocketAprsSourceId3 = None
             self.websocketAprsHost3 = None
             self.websocketAprsPort3 = None
@@ -134,7 +134,7 @@ class TrackDirectConfig(Singleton):
                 'websocket_server', 'aprs_port4').strip('"')
             self.websocketAprsSourceId4 = int(configParser.get(
                 'websocket_server', 'aprs_source_id4').strip('"'))
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        except (configparser.NoSectionError, configparser.NoOptionError):
             self.websocketAprsSourceId4 = None
             self.websocketAprsHost4 = None
             self.websocketAprsPort4 = None
