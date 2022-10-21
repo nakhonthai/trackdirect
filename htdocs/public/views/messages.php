@@ -1,6 +1,12 @@
 <?php require dirname(__DIR__) . "../../includes/bootstrap.php"; ?>
 
-<?php $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null); ?>
+<?php
+  if (isset($_GET['c'])) {
+    $station = StationRepository::getInstance()->getObjectByName(strtoupper($_GET['c']) ?? null);
+  } else {
+    $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null);
+  }
+?>
 <?php if ($station->isExistingObject()) : ?>
 
     <?php
@@ -12,13 +18,13 @@
         $page = $_GET['page'] ?? 1;
         $rows = $_GET['rows'] ?? 25;
         $offset = ($page - 1) * $rows;
-        $show = $_GET['show'] ?? 'message';
+        $format = $_GET['format'] ?? 'messages';
 
         $start_time = microtime(true);
-        if ($show == 'message') {
+        if ($format == 'messages') {
           $packets = PacketRepository::getInstance()->getMessageObjectListByStationIdAndCall($station->id, $station->name, $rows, $offset, $maxDays);
           $count = PacketRepository::getInstance()->getNumberOfMessagesByStationIdAndCall($station->id, $station->name, $maxDays);
-        } else if ($show == 'bulletin') {
+        } else if ($format == 'bulletins') {
           $packets = PacketRepository::getInstance()->getBulletinObjectListByStationId($station->id, $rows, $offset, $maxDays);
           $count = PacketRepository::getInstance()->getNumberOfBulletinsByStationId($station->id, $maxDays);
         }
@@ -44,14 +50,14 @@
         <div class="horizontal-line" style="margin:0">&nbsp;</div>
 
         <div class="modal-inner-content-menu" style="margin-left:25px;">
-            <?php if ($show != 'message'): ?><a class="tdlink" href="/views/messages.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&show=message"><?php echo $titles['message']; ?></a><?php else: ?><span><?php echo $titles['message']; ?></span><?php endif; ?>
-            <?php if ($show != 'bulletin'): ?><a class="tdlink" href="/views/messages.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&show=bulletin"><?php echo $titles['bulletin']; ?></a><?php else: ?><span><?php echo $titles['bulletin']; ?></span><?php endif; ?>
+            <?php if ($format != 'messages'): ?><a class="tdlink" href="/views/messages.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&format=messages"><?php echo $titles['message']; ?></a><?php else: ?><span><?php echo $titles['message']; ?></span><?php endif; ?>
+            <?php if ($format != 'bulletins'): ?><a class="tdlink" href="/views/messages.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&format=bulletins"><?php echo $titles['bulletin']; ?></a><?php else: ?><span><?php echo $titles['bulletin']; ?></span><?php endif; ?>
         </div>
 
         <div class="horizontal-line">&nbsp;</div>
 
         <p>
-          <?php if ($count): ?>A total of <?php echo $count ?> <?php echo $show; ?>s have been found for station/object <b><?php echo $station->name; ?></b> from the past <?php echo $maxDays; ?> day(s).
+          <?php if ($count): ?>A total of <?php echo $count ?> <?php echo $format; ?>s have been found for station/object <b><?php echo $station->name; ?></b> from the past <?php echo $maxDays; ?> day(s).
           <?php else: ?>If no packets are shown the station/object has not sent any packets within the past <?php echo $maxDays; ?> day(s).<?php endif; ?>
           <?php if ($count): ?>This data took <?php echo round($dbtime, 3) ?> seconds to find in our database.<?php endif; ?>
         </p>
@@ -69,16 +75,16 @@
         <?php endif; ?>
         <?php if ($pages > 1): ?>
             <div class="pagination">
-              <a class="tdlink" href="/views/messages.php?id=<?php echo $station->id; ?>&show=<?php echo $show; ?>&imperialUnits=<?php echo ($_GET['imperialUnits'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
+              <a class="tdlink" href="/views/messages.php?id=<?php echo $station->id; ?>&show=<?php echo $format; ?>&imperialUnits=<?php echo ($_GET['imperialUnits'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
               <?php for($i = max(1, $page - 3); $i <= min($pages, $page + 3); $i++) : ?>
-              <a href="/views/messages.php?id=<?php echo $station->id; ?>&show=<?php echo $show; ?>&imperialUnits=<?php echo ($_GET['imperialUnits'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
+              <a href="/views/messages.php?id=<?php echo $station->id; ?>&show=<?php echo $format; ?>&imperialUnits=<?php echo ($_GET['imperialUnits'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
               <?php endfor; ?>
-              <a class="tdlink" href="/views/messages.php?id=<?php echo $station->id; ?>&show=<?php echo $show; ?>&imperialUnits=<?php echo ($_GET['imperialUnits'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=<?php echo $pages; ?>">>></a>
+              <a class="tdlink" href="/views/messages.php?id=<?php echo $station->id; ?>&show=<?php echo $format; ?>&imperialUnits=<?php echo ($_GET['imperialUnits'] ?? 1); ?>&rows=<?php echo $rows; ?>&page=<?php echo $pages; ?>">>></a>
             </div>
         <?php endif; ?>
 
 
-        <?php if ($show == 'message'): ?>
+        <?php if ($format == 'messages'): ?>
           <?php if ($count > 0): ?>
           <div class="datagrid datagrid-raw" style="max-width:1000px;">
             <table>
@@ -109,7 +115,7 @@
           <?php endif; ?>
         <?php endif; ?>
 
-        <?php if ($show == 'bulletin'): ?>
+        <?php if ($format == 'bulletins'): ?>
           <?php if ($count > 0): ?>
           <div class="datagrid datagrid-raw" style="max-width:1000px;">
             <table>
@@ -139,6 +145,12 @@
           <?php endif; ?>
       <?php endif; ?>
 
+      <div class="quiklink">
+        Link directly to this page: <input id="quiklink" type="text" value="<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>/station/<?php echo $station->name; ?>/<?php echo $format; ?>/" readonly>
+        <img id="quikcopy" src="/images/copy.svg"/>
+      </div>
+
+    </div>
     <script>
         $(document).ready(function() {
             var locale = window.navigator.userLanguage || window.navigator.language;
@@ -151,12 +163,13 @@
             });
 
             $('#raw-rows').change(function () {
-                loadView("/views/messages.php?id=<?php echo $station->id ?>&show=<?php echo $show; ?>&imperialUnits=<?php echo ($_GET['imperialUnits'] ?? 1); ?>&rows=" + $('#raw-rows').val() + "&page=1");
+                loadView("/views/messages.php?id=<?php echo $station->id ?>&show=<?php echo $format; ?>&imperialUnits=<?php echo ($_GET['imperialUnits'] ?? 1); ?>&rows=" + $('#raw-rows').val() + "&page=1");
             });
 
             $('.parsepkt').each(function(){
               const packet = $(this).text();
               const p1 = packet.split(">");
+              if (typeof p1[1] === "undefined") return;
               const p2 = p1[1].split(":");
               const p3 = p2[0].split(",");
               p2.shift();
@@ -179,6 +192,8 @@
                     });
                 <?php endif; ?>
             }
+
+            quikLink();
         });
     </script>
 <?php endif; ?>

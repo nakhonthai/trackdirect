@@ -16,11 +16,6 @@ body {
   background: #fff;
 }
 
-label {
-  display: inline-block;
-  width: 5em;
-}
-
 h1 {
   font-family: "Sans-serif", "Helvetica" !important;
   color: #1a1a1a;
@@ -567,6 +562,23 @@ input[type=submit]:hover {
   height: 20px;
 }
 
+.quiklink {
+  margin-top: 20px;
+  padding: 4px;
+  background: #eeeeee;
+}
+
+.quiklink input[type=text] {
+  width: 400px;
+  pading: 2px;
+  height: 22px;
+}
+
+.quiklink img {
+  height: 20px;
+  vertical-align: middle;
+}
+
 #titlebar {
   width: calc(100% - 10px);
   padding:4px;
@@ -604,11 +616,11 @@ input[type=submit]:hover {
 }
 
 #raw-content-output {
-  height:calc(100% - 236px);
+  height:calc(100% - 239px);
 }
 
 #live-content-output {
-  height:calc(100% - 169px);
+  height:calc(100% - 195px);
 }
 
 #raw-content-output p {
@@ -783,11 +795,8 @@ input[type=submit]:hover {
   font-size: 13px;
   font-weight: bold;
   border-left: 1px solid #A3A3A3;
-  line-height: 23px;
-}
-
-.datagrid table thead th:first-child {
-  border: none;
+  line-height: 21px;
+  padding: 0px 10px
 }
 
 .datagrid table tbody td {
@@ -795,7 +804,7 @@ input[type=submit]:hover {
   border-left: 1px solid #DBDBDB;
   font-size: 12px;
   font-weight: normal;
-  line-height: 22px;
+  line-height: 18px;
   vertical-align: top;
 }
 

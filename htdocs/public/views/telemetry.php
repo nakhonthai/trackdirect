@@ -1,33 +1,22 @@
 <?php require dirname(__DIR__) . "../../includes/bootstrap.php"; ?>
 
-<?php $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null); ?>
+<?php
+  if (isset($_GET['c'])) {
+    $station = StationRepository::getInstance()->getObjectByName(strtoupper($_GET['c']) ?? null);
+  } else {
+    $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null);
+  }
+?>
 <?php if ($station->isExistingObject()) : ?>
     <?php
-        $maxDays = 10;
-        if (!isAllowedToShowOlderData()) {
-            $maxDays = 1;
-        }
         $format = $_GET['format'] ?? 'current';
-
         $start = $_GET['start'] ?? time()-864000;
         $end = $_GET['end'] ?? time();
 
-        $page = $_GET['page'] ?? 1;
-        $rows = $_GET['rows'] ?? 25;
-        $offset = ($page - 1) * $rows;
-
         $start_time = microtime(true);
-        if ($format == 'table') {
-          $telemetryPackets = PacketTelemetryRepository::getInstance()->getLatestObjectListByStationId($station->id, $rows, $offset, $maxDays, 'asc', $start, $end);
-          $latestPacketTelemetry = (count($telemetryPackets) > 0 ? $telemetryPackets[0] : new PacketTelemetry(null));
-          $count = PacketTelemetryRepository::getInstance()->getLatestNumberOfPacketsByStationId($station->id, $maxDays, $start, $end);
-          $pages = ceil($count / $rows);
-        } else {
-          $telemetryPackets = PacketTelemetryRepository::getInstance()->getLatestObjectListByStationId($station->id, 1, 0, $maxDays);
-          $latestPacketTelemetry = (count($telemetryPackets) > 0 ? $telemetryPackets[0] : new PacketTelemetry(null));
-          $count = 1;
-          $pages = 0;
-        }
+
+        $telemetryPackets = PacketTelemetryRepository::getInstance()->getLatestObjectListByStationId($station->id, 1, 0, 10);
+        $latestPacketTelemetry = (count($telemetryPackets) > 0 ? $telemetryPackets[0] : new PacketTelemetry(null));
         $dbtime = microtime(true) - $start_time;
 
         $titles = array('current' => 'Current Readings', 'graph' => 'Telemetry Graphs', 'table' => 'Telemetry Data');
@@ -65,7 +54,7 @@
                   <?php $lastEntry = end($telemetryPackets); reset($telemetryPackets); ?>
                   <span style-="float:left;">Displaying data from <span id="oldest-timestamp" style="font-weight:bold;"></span> to <span id="latest-timestamp" style="font-weight:bold;"></b></span>.  <span id="records"></span> (max 1000)</span>
                 <?php elseif ($format == 'table'): ?>
-                  <span style="float:left;">Displaying <?php echo $offset+1; ?> - <?php echo ($offset+$rows < $count ? $offset+$rows : $count); ?> of <?php echo $count ?> telemetry records. Data retrieved in <?php echo round($dbtime, 3) ?> seconds.</span>
+                  <span style="float:left;">Telemetry records retrieved in <span id="dbtime">....</span> seconds.</span>
                 <?php else: ?>
                   <span style="float:left;">Displaying latest telemetry as of <span id="latest-timestamp" class="telemetrytime" style="font-weight:bold;"><?php echo ($telemetryPackets[0]->wxRawTimestamp != null?$telemetryPackets[0]->wxRawTimestamp:$telemetryPackets[0]->timestamp); ?></span>. Data retrieved in <?php echo round($dbtime, 3) ?> seconds.</span>
                 <?php endif; ?>
@@ -75,14 +64,6 @@
             <?php if ($format != 'current'): ?>
               <form id="telemhistory-form" style="float:right;line-height: 28px">
                 Show
-                <select id="telemetry-rows" class="pagination-rows">
-                    <option <?php echo ($rows == 25 ? 'selected' : ''); ?> value="25">25</option>
-                    <option <?php echo ($rows == 50 ? 'selected' : ''); ?> value="50">50</option>
-                    <option <?php echo ($rows == 100 ? 'selected' : ''); ?> value="100">100</option>
-                    <option <?php echo ($rows == 200 ? 'selected' : ''); ?> value="200">200</option>
-                    <option <?php echo ($rows == 300 ? 'selected' : ''); ?> value="300">300</option>
-                </select>
-                rows of
                 <select id="telemetry-category">
                     <option <?php echo (($_GET['category'] ?? 1) == 1 ? 'selected' : ''); ?> value="1">Telemetry Values</option>
                     <option <?php echo (($_GET['category'] ?? 1) == 2 ? 'selected' : ''); ?> value="2">Telemetry Bits</option>
@@ -158,7 +139,7 @@
               <br />
 
               <?php if ($latestPacketTelemetry->bits !== null): ?>
-                <div class="datagrid datagrid-telemetry1" style="max-width:1000px;">
+                <div class="datagrid" style="max-width:1000px;">
                   <table style="width:100%;max-width:1000px;">
                       <thead>
                           <tr>
@@ -176,16 +157,6 @@
                   </table>
                 </div>
               <?php endif; ?>
-            <?php endif; ?>
-
-            <?php if ($pages > 1 && $format == 'table'): ?>
-                <div class="pagination">
-                  <a class="tdlink" href="/views/telemetry.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&format=<?php echo $format; ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=1"><<</a>
-                  <?php for($i = max(1, $page - 3); $i <= min($pages, $page + 3); $i++) : ?>
-                  <a href="/views/telemetry.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&format=<?php echo $format; ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
-                  <?php endfor; ?>
-                  <a class="tdlink" href="/views/telemetry.php?id=<?php echo $station->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&category=<?php echo ($_GET['category'] ?? 1); ?>&format=<?php echo $format; ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $pages; ?>">>></a>
-                </div>
             <?php endif; ?>
 
             <?php if (($_GET['category'] ?? 1) == 1) : ?>
@@ -234,8 +205,8 @@
               <?php endif; ?>
 
               <?php if ($format == 'table'): ?>
-              <div class="datagrid datagrid-telemetry1" style="max-width:1000px;">
-                  <table>
+              <div class="datagrid datagrid-telemetry1" >
+                  <table id="telem-value-table" style="width:100%">
                       <thead>
                           <tr>
                               <th>Time</th>
@@ -247,26 +218,6 @@
                           </tr>
                       </thead>
                       <tbody>
-
-                      <?php foreach ($telemetryPackets as $packetTelemetry) : ?>
-
-                          <tr>
-                              <td class="telemetrytime">
-                                  <?php echo ($packetTelemetry->wxRawTimestamp != null?$packetTelemetry->wxRawTimestamp:$packetTelemetry->timestamp); ?>
-                              </td>
-                            <?php for ($x = 1; $x <= 5; $x++): ?>
-                              <?php $converted = universalDataUnitConvert(round($packetTelemetry->getValue($x), 2), $packetTelemetry->getValueUnit($x)); ?>
-                              <td>
-                                  <?php if ($packetTelemetry->{"val$x"}  !== null) : ?>
-                                      <?php echo $converted['value']; ?> <?php echo htmlspecialchars($converted['unit']); ?>
-                                  <?php else : ?>
-                                      -
-                                  <?php endif; ?>
-                              </td>
-                            <?php endfor; ?>
-                          </tr>
-
-                      <?php endforeach; ?>
                       </tbody>
                   </table>
               </div>
@@ -332,8 +283,8 @@
                 <?php endif; ?>
 
                 <?php if ($format == 'table'): ?>
-                  <div class="datagrid datagrid-telemetry2" style="max-width:1000px;">
-                      <table>
+                  <div class="datagrid datagrid-telemetry2">
+                      <table id="telem-bit-table" style="width:100%;">
                           <thead>
                               <tr>
                                   <th>Time</th>
@@ -348,55 +299,6 @@
                               </tr>
                           </thead>
                           <tbody>
-                          <?php foreach ($telemetryPackets as $i => $packetTelemetry) : ?>
-                              <?php if ($packetTelemetry->bits !== null && $i >= 2 ) : ?>
-                              <tr>
-                                  <td class="telemetrytime">
-                                      <?php echo $packetTelemetry->timestamp; ?>
-                                  </td>
-                                  <td>
-                                      <div class="<?php echo ($packetTelemetry->getBit(1) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(1)); ?>
-                                      </div>
-                                  </td>
-                                  <td>
-                                      <div class="<?php echo ($packetTelemetry->getBit(2) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(2)); ?>
-                                      </div>
-                                  </td>
-                                  <td>
-                                      <div class="<?php echo ($packetTelemetry->getBit(3) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(3)); ?>
-                                      </div>
-                                  </td>
-                                  <td>
-                                      <div class="<?php echo ($packetTelemetry->getBit(4) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(4)); ?>
-                                      </div>
-                                  </td>
-                                  <td>
-                                      <div class="<?php echo ($packetTelemetry->getBit(5) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(5)); ?>
-                                      </div>
-                                  </td>
-                                  <td>
-                                      <div class="<?php echo ($packetTelemetry->getBit(6) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(6)); ?>
-                                      </div>
-                                  </td>
-                                  <td>
-                                      <div class="<?php echo ($packetTelemetry->getBit(7) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(7)); ?>
-                                      </div>
-                                  </td>
-                                  <td>
-                                      <div class="<?php echo ($packetTelemetry->getBit(8) == 1?'telemetry-biton':'telemetry-bitoff'); ?>">
-                                          <?php echo htmlspecialchars($packetTelemetry->getBitLabel(8)); ?>
-                                      </div>
-                                  </td>
-                              </tr>
-                              <?php endif; ?>
-                          <?php endforeach; ?>
                           </tbody>
                       </table>
                   </div>
@@ -438,6 +340,11 @@
             <p><i><b>No recent telemetry values.</b></i></p>
         <?php endif; ?>
 
+        <div class="quiklink">
+          Link directly to this page: <input id="quiklink" type="text" value="<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>/station/<?php echo $station->name; ?>/<?php echo basename(__FILE__, '.php'); ?>/<?php echo $format; ?>/" readonly>
+          <img id="quikcopy" src="/images/copy.svg"/>
+        </div>
+
     </div>
 
     <script>
@@ -452,12 +359,78 @@
             });
 
             $('#telemetry-category').change(function () {
-                loadView("/views/telemetry.php?id=<?php echo $station->id ?>&format=<?php echo $format; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&category=" + $('#telemetry-category').val() + "&rows=" + $('#telemetry-rows').val() + "&page=1");
+                loadView("/views/telemetry.php?id=<?php echo $station->id ?>&format=<?php echo $format; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&category=" + $('#telemetry-category').val());
             });
 
-            $('#telemetry-rows').change(function () {
-                loadView("/views/telemetry.php?id=<?php echo $station->id ?>&format=<?php echo $format; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&category=" + $('#telemetry-category').val() + "&rows=" + $('#telemetry-rows').val() + "&page=1");
-            });
+            <?php if ($format=='table' && ($_GET['category'] ?? 1) == 1): ?>
+              $('#telem-value-table').DataTable( {
+                ajax: {
+                  url: '/data/data.php?module=telemetry&command=getTelemetryValues&id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?><?php if (isset($_GET['start'])): ?>&start=<?php echo $_GET['start'];?>&end=<?php echo $_GET['end'];?><?php endif;?>',
+                  dataSrc: function (json) {
+                    $("#dbtime").text(json.data.dbtime);
+                    return json.data.values;
+                  }
+                },
+                columns: [
+                  { data: 'ts',
+                    render: DataTable.render.datetime(),
+                    width: '10em' },
+                  { data: '1',
+                    render: function(data) {
+                        return data + ' <?php echo universalDataUnitConvert(round($latestPacketTelemetry->getValue(1), 2), $latestPacketTelemetry->getValueUnit(1))['unit']; ?>';
+                      },
+                    width: '3em' },
+                  { data: '2',
+                    render: function(data) {
+                        return data + ' <?php echo universalDataUnitConvert(round($latestPacketTelemetry->getValue(2), 2), $latestPacketTelemetry->getValueUnit(2))['unit']; ?>';
+                      },
+                    width: '3em' },
+                  { data: '3',
+                    render: function(data) {
+                      return data + ' <?php echo universalDataUnitConvert(round($latestPacketTelemetry->getValue(3), 2), $latestPacketTelemetry->getValueUnit(3))['unit']; ?>';
+                      },
+                    width: '3em' },
+                  { data: '4',
+                    render: function(data) {
+                      return data + ' <?php echo universalDataUnitConvert(round($latestPacketTelemetry->getValue(4), 2), $latestPacketTelemetry->getValueUnit(4))['unit']; ?>';
+                      },
+                    width: '3em' },
+                  { data: '5',
+                    render: function(data) {
+                      return data + ' <?php echo universalDataUnitConvert(round($latestPacketTelemetry->getValue(5), 2), $latestPacketTelemetry->getValueUnit(5))['unit']; ?>';
+                      },
+                    width: '3em' }
+                ],
+                 order: [[0, 'desc']],
+              });
+            <?php endif; ?>
+
+            <?php if ($format=='table' && ($_GET['category'] ?? 1) == 2): ?>
+              $('#telem-bit-table').DataTable( {
+                ajax: {
+                  url: '/data/data.php?module=telemetry&command=getTelemetryBits&id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?><?php if (isset($_GET['start'])): ?>&start=<?php echo $_GET['start'];?>&end=<?php echo $_GET['end'];?><?php endif;?>',
+                  dataSrc: function (json) {
+                    $("#dbtime").text(json.data.dbtime);
+                    return json.data.bits;
+                  }
+                },
+                columns: [
+                  { data: 'ts',
+                    render: DataTable.render.datetime(),
+                    width: '10em' },
+                  { data: '1' },
+                  { data: '2' },
+                  { data: '3' },
+                  { data: '4' },
+                  { data: '5' },
+                  { data: '6' },
+                  { data: '7' },
+                  { data: '8' }
+                ],
+                order: [[0, 'desc']],
+              });
+            <?php endif; ?>
+            $("input[type=search]").css('padding', '1px');
 
             if (window.trackdirect) {
                 <?php if ($station->latestConfirmedLatitude != null && $station->latestConfirmedLongitude != null) : ?>
@@ -472,6 +445,7 @@
                 });
             }
 
+            quikLink();
         });
     </script>
 <?php endif; ?>

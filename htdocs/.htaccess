@@ -9,8 +9,17 @@
     Header set Access-Control-Allow-Origin "*"
 </IfModule>
 
-RewriteEngine on
+<IfModule mod_rewrite.c>
+  RewriteEngine on
+
+# Only process station details
+  RewriteCond %{REQUEST_URI} ^/station/.*
+  RewriteRule ^station/([A-Za-z0-9\-]+)/$ /views/overview.php?c=$1 [QSA,L]
+  RewriteRule ^station/([A-Za-z0-9\-]+)/(messages|bulletins)/$ /views/messages.php?c=$1&format=$2 [QSA,L]
+  RewriteRule ^station/([A-Za-z0-9\-]+)/([A-Za-z0-9]+)/$ /views/$2.php?c=$1 [QSA,L]
+  RewriteRule ^station/([A-Za-z0-9\-]+)/([A-Za-z0-9]+)/([A-Za-z0-9]+)/$ /views/$2.php?c=$1&format=$3 [QSA,L]
 
 # Redirect everything to the public directory
-RewriteRule ^(.*)$ /public/$1 [L]
+  RewriteRule ^(.*)$ /public/$1 [L]
 
+</IfModule>

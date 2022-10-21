@@ -1,6 +1,12 @@
 <?php require dirname(__DIR__) . "../../includes/bootstrap.php"; ?>
 
-<?php $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null); ?>
+<?php
+  if (isset($_GET['c'])) {
+    $station = StationRepository::getInstance()->getObjectByName(strtoupper($_GET['c']) ?? null);
+  } else {
+    $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null);
+  }
+?>
 <?php if ($station->isExistingObject()) : ?>
     <title><?php echo $station->name; ?> Trail Chart</title>
     <div class="modal-inner-content">
@@ -42,6 +48,12 @@
         <p>
             * chart x-axis is based on your timezone (not the timezone of the station).
         </p>
+
+        <div class="quiklink">
+          Link directly to this page: <input id="quiklink" type="text" value="<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>/station/<?php echo $station->name; ?>/<?php echo basename(__FILE__, '.php'); ?>/" readonly>
+          <img id="quikcopy" src="/images/copy.svg"/>
+        </div>
+
     </div>
     <script>
         $(document).ready(function() {
@@ -191,6 +203,7 @@
 
             loadTrailChart(<?php echo $station->id; ?>, $('#trail-hours').val(), $('#trail-type').val(), <?php echo $_GET['imperialUnits'] ?? 0; ?>);
 
+            quikLink();
         });
     </script>
 <?php endif; ?>

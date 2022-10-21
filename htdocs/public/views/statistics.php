@@ -1,6 +1,12 @@
 <?php require dirname(__DIR__) . "../../includes/bootstrap.php"; ?>
 
-<?php $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null); ?>
+<?php
+  if (isset($_GET['c'])) {
+    $station = StationRepository::getInstance()->getObjectByName(strtoupper($_GET['c']) ?? null);
+  } else {
+    $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null);
+  }
+?>
 <?php if ($station->isExistingObject()) : ?>
     <?php
         $days = 10;
@@ -127,6 +133,12 @@
         <?php if (count($senderStats) == 0 && count($receiverStats) == 0): ?>
             <p><i><b>No radio communication statistics during the latest <?php echo $days; ?> days.</b></i></p>
         <?php endif; ?>
+
+      <div class="quiklink">
+        Link directly to this page: <input id="quiklink" type="text" value="<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>/station/<?php echo $station->name; ?>/<?php echo basename(__FILE__, '.php'); ?>/" readonly>
+        <img id="quikcopy" src="/images/copy.svg"/>
+      </div>
+
     </div>
     <script>
         $(document).ready(function() {
@@ -148,6 +160,7 @@
                     });
                 <?php endif; ?>
             }
+            quikLink();
         });
     </script>
 <?php endif; ?>

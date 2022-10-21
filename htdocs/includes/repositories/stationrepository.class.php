@@ -342,8 +342,9 @@ class StationRepository extends ModelRepository
         if ($pos) {
             $call = substr($name, 0, $pos);
         } else {
-            // No object found, return empty array
-            return [];
+            // Primary stations are supposed to use the -0 suffix.
+            // Some APRS software will drop the -0 and transmit just the callsign.
+            $call = $name;
         }
 
         if ($station->latestPacketTimestamp !== null) {

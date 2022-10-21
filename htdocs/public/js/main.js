@@ -343,7 +343,20 @@ var liveData = {
 };
 
 
+function quikLink() {
+  $("#quiklink, #quikcopy").click(copyClip);
+}
 
+function copyClip() {
+  $("#quiklink, #quikcopy").off("click");
+  $("#quiklink").select();
+  document.execCommand("copy");
+  $("#quikcopy").after("<span id='cpy'>copied!</span>");
+  $("#cpy").delay(500).fadeOut(1000, function(){
+    this.remove();
+    $("#quiklink, #quikcopy").click(copyClip);
+  });
+}
 
 
 function initGraph(cnt) {
@@ -430,7 +443,7 @@ function loadView(url) {
     $("#td-modal-content").html('<img src="/images/spinner.gif" style="max-width: 100%; max-height: 100px; margin-top: 40px; margin-left: auto; margin-right: auto; display: block;"/>');
     $("#td-modal-title").text('');
     $("#td-modal").show();
-    $("#td-modal-content").load(requestUrl, {'modal': true},
+    $("#td-modal-content").html('').load(requestUrl, {'modal': true},
       function() {
         history.replaceState(null, "", requestUrl);
         var title = $('#td-modal-content title').text();

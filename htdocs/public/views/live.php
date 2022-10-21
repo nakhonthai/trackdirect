@@ -1,6 +1,12 @@
 <?php require dirname(__DIR__) . "../../includes/bootstrap.php"; ?>
 
-<?php $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null); ?>
+<?php
+  if (isset($_GET['c'])) {
+    $station = StationRepository::getInstance()->getObjectByName(strtoupper($_GET['c']) ?? null);
+  } else {
+    $station = StationRepository::getInstance()->getObjectById($_GET['id'] ?? null);
+  }
+?>
 <?php if ($station->isExistingObject()) : ?>
 
     <title><?php echo $station->name; ?> Live Packet Feed</title>
@@ -25,6 +31,11 @@
         <div id="titlebar"><img src="/public/images/dotColor3.svg" id="live-img"> <span id="live-status">Waiting for connection...</span></div>
         <div id="live-content-output"><span id="output-status">Initializing...</span><div id="live-content"></div></div>
 
+        <div class="quiklink">
+          Link directly to this page: <input id="quiklink" type="text" value="<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]"; ?>/station/<?php echo $station->name; ?>/<?php echo basename(__FILE__, '.php'); ?>/" readonly>
+          <img id="quikcopy" src="/images/copy.svg"/>
+        </div>
+
     </div>
 
     <script>
@@ -45,5 +56,6 @@
                 });
             }
         });
+        quikLink();
     </script>
 <?php endif; ?>
