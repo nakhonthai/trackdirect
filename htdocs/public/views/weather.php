@@ -9,6 +9,7 @@
 ?>
 <?php if ($station->isExistingObject()) : ?>
     <?php
+        $maxDays = 10;
         $format = $_GET['format'] ?? 'current';
         $start = $_GET['start'] ?? time()-864000;
         $end = $_GET['end'] ?? time();
@@ -17,7 +18,7 @@
         $missingGraphs = [];
 
         $start_time = microtime(true);
-        $weatherPackets = PacketWeatherRepository::getInstance()->getLatestObjectListByStationIdAndLimit($station->id, 1, 0, 10);
+        $weatherPackets = PacketWeatherRepository::getInstance()->getLatestObjectListByStationIdAndLimit($station->id, 1, 0, $maxDays);
         $dbtime = microtime(true) - $start_time;
 
         $titles = array('current' => 'Current Conditions', 'graph' => 'Weather Graphs', 'table' => 'Weather Data');
@@ -161,14 +162,14 @@
                 <canvas data-type="radial-gauge" id="pressure-gauge" class="weather-gauge"
                   data-units="<?php echo isImperialUnitUser() ? 'inHg' : 'hPa'?>"
                   data-title="Pressure"
-                  data-min-value="<?php echo isImperialUnitUser() ? '24' : '825'?>"
-                  data-max-value="<?php echo isImperialUnitUser() ? '33' : '1100'?>"
-                  data-major-ticks="<?php echo isImperialUnitUser() ? '24,26,26,27,28,29,30,31,32,33' : '825,850,875,900,925,950,975,1000,1025,1050,1075,1100'?>"
+                  data-min-value="<?php echo isImperialUnitUser() ? '26' : '825'?>"
+                  data-max-value="<?php echo isImperialUnitUser() ? '32' : '1100'?>"
+                  data-major-ticks="<?php echo isImperialUnitUser() ? '26,27,28,29,30,31,32' : '825,850,875,900,925,950,975,1000,1025,1050,1075,1100'?>"
                   data-minor-ticks="2"
                   data-stroke-ticks="true"
-                  data-highlights='[{"from": <?php echo isImperialUnitUser() ? '24' : '825'?>, "to": <?php echo isImperialUnitUser() ? '28' : '900'?>, "color": "rgba(213, 62, 62, .6)"},
+                  data-highlights='[{"from": <?php echo isImperialUnitUser() ? '26' : '825'?>, "to": <?php echo isImperialUnitUser() ? '28' : '900'?>, "color": "rgba(213, 62, 62, .6)"},
                                     {"from": <?php echo isImperialUnitUser() ? '28' : '900'?>, "to": <?php echo isImperialUnitUser() ? '30' : '975'?>, "color": "rgba(255, 173, 10, .5)"},
-                                    {"from": <?php echo isImperialUnitUser() ? '30' : '1000'?>, "to": <?php echo isImperialUnitUser() ? '33' : '1100'?>, "color": "rgba(0, 255, 0, .3)"} ]'
+                                    {"from": <?php echo isImperialUnitUser() ? '30' : '975'?>, "to": <?php echo isImperialUnitUser() ? '32' : '1100'?>, "color": "rgba(0, 255, 0, .3)"} ]'
                   data-value="<?php echo isImperialUnitUser() ? round(convertMbarToInchHg($weatherPackets[0]->pressure), 1) : round($weatherPackets[0]->pressure, 1)?>"
                 ></canvas>
                 <script>wxGaugeParams('pressure-gauge');</script>

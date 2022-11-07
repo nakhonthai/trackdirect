@@ -372,4 +372,27 @@ class Packet extends Model
     public function getSenderObject() {
         return SenderRepository::getInstance()->getObjectById($this->senderId);
     }
+
+    /**
+     * Get packet equipment type name based on to_call
+     *
+     * @return String
+     */
+    public function getEquipmentTypeName()
+    {
+        $path = explode(',', $this->raw_path);
+        if (sizeof($path) > 1)
+        {
+          $path = explode('-', $path[0]);
+          $pdo = PDOConnection::getInstance();
+          $sql = 'select * from to_calls where callsign = ? or callsign = ? or callsign = ? order by callsign desc limit 1';
+          $stmt = $pdo->prepareAndExec($sql, [$path[0], substr($path[0], 0, 5).'*', substr($path[0], 0, 4) . '**']);
+          $record = $stmt->fetch(PDO::FETCH_ASSOC);
+
+          if (!empty($record) && $record['description'] != null) {
+            return $record['description'];
+          }
+        }
+        return "Unknown Equipment";
+    }
 }

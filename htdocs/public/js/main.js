@@ -20,9 +20,9 @@ jQuery(document).ready(function ($) {
   $('#timetravel-form').bind('submit',function(e) {
     if ($('#timetravel-date').val() != '0' && $('#timetravel-time').val() != '0') {
         trackdirect.setTimeLength(60, false);
-        var ts = moment($('#timetravel-date').val() + ' ' + $('#timetravel-time').val(), 'YYYY-MM-DD HH:mm').unix();
-        trackdirect.setTimeTravelTimestamp(ts);
-        $('#right-container-timetravel-content').html('Showing ' + $('#timetravel-date').val() + ' ' + $('#timetravel-time').val());
+        var ts = moment($('#timetravel-date').val() + ' ' + $('#timetravel-time').val(), 'YYYY-MM-DD HH:mm');
+        trackdirect.setTimeTravelTimestamp(ts.unix());
+        $('#right-container-timetravel-content').html('Showing ' + ts.format('L LTS'));
         $('#right-container-timetravel').show();
     } else {
         trackdirect.setTimeTravelTimestamp(0, true);
@@ -443,7 +443,7 @@ function loadView(url) {
     $("#td-modal-content").html('<img src="/images/spinner.gif" style="max-width: 100%; max-height: 100px; margin-top: 40px; margin-left: auto; margin-right: auto; display: block;"/>');
     $("#td-modal-title").text('');
     $("#td-modal").show();
-    $("#td-modal-content").html('').load(requestUrl, {'modal': true},
+    $("#td-modal-content").load(requestUrl, {'modal': true},
       function() {
         history.replaceState(null, "", requestUrl);
         var title = $('#td-modal-content title').text();

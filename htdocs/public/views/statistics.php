@@ -17,7 +17,7 @@
     <?php $senderStats = PacketPathRepository::getInstance()->getSenderPacketPathSatistics($station->id, time() - (60*60*24*$days)); ?>
     <?php $receiverStats = PacketPathRepository::getInstance()->getReceiverPacketPathSatistics($station->id, time() - (60*60*24*$days)); ?>
 
-    <title><?php echo $station->name; ?> Stats</title>
+    <title><?php echo $station->name; ?> Statistics</title>
     <div class="modal-inner-content">
         <div class="modal-inner-content-menu">
             <a class="tdlink" title="Overview" href="/views/overview.php?id=<?php echo $station->id ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>">Overview</a>
@@ -43,9 +43,9 @@
                     <thead>
                         <tr>
                             <th>Station</th>
-                            <th>Number of packets</th>
-                            <th>Latest heard</th>
-                            <th>Longest distance</th>
+                            <th>Number of Packets</th>
+                            <th>Latest Heard *</th>
+                            <th>Longest Distance</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -59,7 +59,7 @@
                             <td>
                                 <?php echo $stats["number_of_packets"]; ?>
                             </td>
-                            <td class="latest-heard">
+                            <td class="latest-heard" data-station-id="<?php echo $otherStation->id; ?>">
                                 <?php echo $stats["latest_timestamp"];?>
                             </td>
 
@@ -86,13 +86,13 @@
         <?php if (count($receiverStats) > 0) : ?>
             <p>Stations <b>directly</b> heard by <?php echo htmlspecialchars($station->name); ?> during the latest <?php echo $days; ?> day(s).</p>
             <div class="datagrid datagrid-statistics" style="max-width:700px;">
-                <table>
+                <table id="stations-heard-by">
                     <thead>
                         <tr>
                             <th>Station</th>
-                            <th>Number of packets</th>
-                            <th>Latest heard</th>
-                            <th>Longest distance</th>
+                            <th>Number of Packets</th>
+                            <th>Latest Heard *</th>
+                            <th>Longest <data value=""></data>istance</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -107,8 +107,8 @@
                             <td>
                                 <?php echo $stats["number_of_packets"]; ?>
                             </td>
-                            <td class="latest-heard">
-                                <?php echo $stats["latest_timestamp"];?>
+                            <td class="latest-heard" data-station-id="<?php echo $otherStation->id; ?>">
+                                  <?php echo $stats["latest_timestamp"];?>
                             </td>
                             <td class="longest-distance">
                                 <?php if ($stats["longest_distance"] !== null) : ?>
@@ -127,6 +127,9 @@
                 </table>
             </div>
             <br/>
+            <?php if (isAllowedToShowOlderData()): ?>
+              <p>* Activates Time Travel to that point time and centers the map on the station.</p>
+            <?php endif; ?>
         <?php endif; ?>
 
 
@@ -147,9 +150,13 @@
 
             $('.latest-heard').each(function() {
                 if ($(this).html().trim() != '' && !isNaN($(this).html().trim())) {
+                  <?php if (!isAllowedToShowOlderData()): ?>
                     $(this).html(moment(new Date(1000 * $(this).html())).format('L LTSZ'));
+                  <?php else: ?>
+                    $(this).html('<a href="#" title="Time Warp & Filter on this Station" data-ts="'+$(this).text()+'">' + moment(new Date(1000 * $(this).html())).format('L LTSZ') + '</a>');
+                  <?php endif; ?>
                 }
-	    });
+	          });
 
             if (window.trackdirect) {
                 <?php if ($station->latestConfirmedLatitude != null && $station->latestConfirmedLongitude != null) : ?>
@@ -160,6 +167,17 @@
                     });
                 <?php endif; ?>
             }
+
+            $(".latest-heard a").bind('click', function(e) {
+              trackdirect.setTimeLength(60, false);
+              window.trackdirect.setTimeTravelTimestamp($(this).attr('data-ts'));
+              $('#right-container-timetravel-content').html('Showing ' + moment(new Date(1000 * $(this).attr('data-ts'))).format('L LTS'));
+              $('#right-container-timetravel').show();
+              window.trackdirect.filterOnStationId([]);
+              window.trackdirect.filterOnStationId($(this).parent().attr('data-station-id'));
+              e.preventDefault();
+            });
+
             quikLink();
         });
     </script>

@@ -60,6 +60,7 @@
                         <th>Name/Id</th>
                         <th>Latest heard</th>
                         <th>Comment/Other</th>
+                        <th>Features</th>
                         <th>Map</th>
 
                     </tr>
@@ -84,6 +85,10 @@
                                 <?php $latestPacket = PacketRepository::getInstance()->getObjectById($foundStation->latestPacketId, $foundStation->latestPacketTimestamp); ?>
                                 <?php echo htmlspecialchars($latestPacket->comment); ?>
                             <?php endif; ?>
+                        </td>
+                        <td>
+                          <?php if ($foundStation->latest_weather_packet_id != null): ?> [<a href="/views/weather.php?id=<?php echo $foundStation->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? '0'; ?>">weather</a>] <?php endif; ?>
+                          <?php if ($foundStation->latest_telemetry_packet_id != null): ?> [<a href="/views/telemetry.php?id=<?php echo $foundStation->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? '0'; ?>">telemetry</a>] <?php endif; ?>
                         </td>
                         <td>
                             <?php if ($foundStation->latestConfirmedPacketTimestamp > (time() - 60*60*24)) : ?>

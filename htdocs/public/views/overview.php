@@ -150,10 +150,14 @@
                     </div>
                 </div>
 
-
                 <div>
                     <div class="overview-content-summary-hr-indent">Path:</div>
                     <div class="overview-content-summary-cell-path overview-content-summary-indent" title="Latest path" id="raw_path"><?php echo $latestPacket->rawPath; ?></div>
+                </div>
+
+                <div>
+                    <div class="overview-content-summary-hr-indent">Equipment:</div>
+                    <div class="overview-content-summary-cell-path overview-content-summary-indent" title="Latest equipment used"><?php echo $latestPacket->getEquipmentTypeName(); ?></div>
                 </div>
 
                 <?php if ($latestPacket->comment != '') : ?>
@@ -236,6 +240,15 @@
                         <?php echo round($station->latestConfirmedLatitude, 5); ?>, <?php echo round($station->latestConfirmedLongitude, 5); ?>
                     </div>
                 </div>
+
+              <?php if (getWebsiteConfig('nominatim_geocoding_api') && $station->latestConfirmedLatitude != null && $station->latestConfirmedLongitude != null) : ?>
+                <div>
+                    <div class="overview-content-summary-hr-indent">Location:</div>
+                    <div id="position-location" class="overview-content-summary-indent" title="Latest position location">
+                      Resolving...
+                    </div>
+                </div>
+              <?php endif;?>
 
                 <div>
                     <div class="overview-content-summary-hr-indent">Receive Time:</div>
@@ -533,6 +546,10 @@
 
                 <?php endif; ?>
 
+                <?php if (getWebsiteConfig('nominatim_geocoding_api') && $station->latestConfirmedLatitude != null && $station->latestConfirmedLongitude != null) : ?>
+                    <li id="nominatim-license"></li>
+                <?php endif; ?>
+
             </ul>
         </div>
 
@@ -577,6 +594,23 @@
                   window.liveData.start("<?php echo $station->name;?>", <?php echo $station->latestPacketTimestamp; ?>, 'overview');
                 });
             }
+
+          <?php if (getWebsiteConfig('nominatim_geocoding_api') && $station->latestConfirmedLatitude != null && $station->latestConfirmedLongitude != null) : ?>
+            $.getJSON('<?php echo getWebsiteConfig('nominatim_geocoding_api'); ?>/reverse?lat=<?php echo $station->latestConfirmedLatitude; ?>&lon=<?php echo $station->latestConfirmedLongitude; ?>&format=json').done(function(response) {
+              var locations = [];
+              if (response.address.road) locations.push(response.address.road);
+              if (response.address.city) locations.push(response.address.city.replace('City of', ''));
+              else if (response.address.town) locations.push(response.address.town.replace('Town of', ''));
+              else if (response.address.village) locations.push(response.address.village.replace('Village of', '').replace('Town of', ''));
+              if (response.address.county) locations.push(response.address.county);
+              if (response.address.state) locations.push(response.address.state);
+              if (response.address.postcode) locations.push(response.address.postcode);
+              if (response.address.country) locations.push(response.address.country);
+              $("#position-location").text(locations.join(', '));
+              $("#nominatim-license").text('Reverse Location ' + response.licence);
+            });
+          <?php endif; ?>
+
             loadOverviewData(<?php echo $station->id ?>);
             quikLink();
         });

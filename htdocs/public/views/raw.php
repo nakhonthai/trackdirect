@@ -139,13 +139,13 @@
           </div>
           <?php if ($pages > 1): ?>
               <form style="float:left;line-height: 28px;padding-left:30px;">
-                <?php if ($page > 1): ?><a class="tdlink" href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $page-1;?>"><b>&lt;</b></a><?php endif; ?>
+                <?php if ($page > 1): ?><a class="tdlink" href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&page=<?php echo $page-1;?>"><b>&lt;</b></a><?php endif; ?>
                 Page <select id="raw-page">
                 <?php for($i = 1; $i <= $pages; $i++): ?>
                   <option value="<?php echo $i; ?>" <?php if ($page == $i) echo ' selected="selected"'; ?>><?php echo $i; ?></option>
                 <?php endfor; ?>
                 </select>
-                <?php if ($page < $pages): ?><a class="tdlink" href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&page=<?php echo $page + 1; ?>"><b>&gt;</b></a><?php endif; ?>
+                <?php if ($page < $pages): ?><a class="tdlink" href="/views/raw.php?id=<?php echo $station->id; ?>&category=<?php echo ($_GET['category'] ?? 1) ?>&type=<?php echo ($_GET['type'] ?? 1); ?>&start=<?php echo $start; ?>&end=<?php echo $end; ?>&rows=<?php echo $rows; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ;?>&page=<?php echo $page + 1; ?>"><b>&gt;</b></a><?php endif; ?>
               </form>
               <script>
                 $("#raw-page").change(function() {
