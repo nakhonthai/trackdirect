@@ -160,4 +160,46 @@ class PacketWeatherRepository extends ModelRepository
 
         return $sum;
     }
+
+    /**
+     * Get weather almanac by station id for a particular period of time
+     *
+     * @param  int $stationId
+     * @param  int $startTime
+     * @return array
+     */
+    public function getAlmanac($stationId, $startTime)
+    {
+      if (!isInt($stationId) || !isInt($startTime)) {
+          return null;
+      }
+
+      $sql = 'select
+                max(temperature) as high_temperature, min(temperature) as low_temperature, avg(temperature) as average_temperature,
+                max(rain_since_midnight) as rainfall,
+                max(pressure) as high_pressure, min(pressure) as low_pressure,
+                max(wind_speed) as wind_speed, max(wind_gust) as wind_gust
+              from packet_weather
+          where station_id = ?
+              and timestamp > ?
+              and timestamp < ?
+              and (humidity is not null
+                  or pressure is not null
+                  or rain_1h is not null
+                  or rain_24h is not null
+                  or rain_since_midnight is not null
+                  or temperature is not null
+                  or wind_direction is not null
+                  or wind_gust is not null
+                  or wind_speed is not null
+                  or luminosity is not null
+                  or snow is not null)';
+
+      $endTime = $startTime + 86400;
+      $parameters = [$stationId, $startTime, $endTime];
+
+      $pdo = PDOConnection::getInstance();
+      $stmt = $pdo->prepareAndExec($sql, $parameters);
+      return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

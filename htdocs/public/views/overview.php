@@ -248,6 +248,18 @@
                       Resolving...
                     </div>
                 </div>
+                <div>
+                    <div class="overview-content-summary-hr-indent">Local Time:</div>
+                    <div id="station-localtime" class="overview-content-summary-indent" title="Local time for the station">
+                      Resolving...
+                    </div>
+                </div>
+                <div>
+                    <div class="overview-content-summary-hr-indent">Time Zone:</div>
+                    <div id="position-timezone" class="overview-content-summary-indent" title="Time zone for latest position">
+                      Resolving...
+                    </div>
+                </div>
               <?php endif;?>
 
                 <div>
@@ -597,6 +609,11 @@
 
           <?php if (getWebsiteConfig('nominatim_geocoding_api') && $station->latestConfirmedLatitude != null && $station->latestConfirmedLongitude != null) : ?>
             $.getJSON('<?php echo getWebsiteConfig('nominatim_geocoding_api'); ?>/reverse?lat=<?php echo $station->latestConfirmedLatitude; ?>&lon=<?php echo $station->latestConfirmedLongitude; ?>&format=json').done(function(response) {
+              $.getJSON('/data/data.php?module=geocoding&command=getLocalTime&id=<?php echo $station->id; ?>&lat=<?php echo $station->latestConfirmedLatitude; ?>&lon=<?php echo $station->latestConfirmedLongitude; ?>&cc=' + response.address.country_code).done(function(response) {
+                var lt = moment.utc(new Date()).utcOffset(response.data.offset/60)
+                $("#position-timezone").text(response.data.tz + ' (GMT '+lt.format('Z')+')');
+                $("#station-localtime").text(lt.format('L LTS'));
+              });
               var locations = [];
               if (response.address.road) locations.push(response.address.road);
               if (response.address.city) locations.push(response.address.city.replace('City of', ''));

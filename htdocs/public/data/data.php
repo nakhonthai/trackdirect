@@ -6,6 +6,7 @@ require dirname(__DIR__) . "../../includes/bootstrap.php";
 $registered_modules = array(
   'weather' => array('getLatestWeather', 'getWeather'),
   'telemetry' => array('getLatestTelemetry', 'getTelemetryValues', 'getTelemetryBits'),
+  'geocoding' => array('getLocalTime'),
 );
 
 // Response array to send back
@@ -218,6 +219,22 @@ function getTelemetryBits($station, &$response)
       }
       $response['data']['bits'][] = $data;
     }
+  }
+}
+
+
+function getLocalTime($station, &$response)
+{
+  $tz = getNearestTimezone($_GET['lat'], $_GET['lon'], $_GET['cc']);
+  if ($tz != null)
+  {
+    $response['data']['tz'] = $tz->getName();
+    $response['data']['offset'] = $tz->getOffset(new DateTime);
+    $response['status'] = 'success';
+    $response['message'] = '';
+  } else {
+    $response['status'] = 'error';
+    $response['message'] = 'Unable to extract timezone from coordinates.';
   }
 }
 

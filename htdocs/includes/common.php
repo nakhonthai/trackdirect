@@ -1938,3 +1938,48 @@ function getLngFromLngPixelCoordinate($lngPixelCoord, $zoom, $imageTileSize) {
     $lng = ((($lngPixelCoord / $scale) / $imageTileSize) - 0.5) * 360;
     return $lng;
 }
+
+/**
+ * Get the closest timezone from coordinates
+ * Original credit to ben@jp
+ * https://stackoverflow.com/questions/3126878/get-php-timezone-name-from-latitude-and-longitude
+ *
+ * @param {float} $latitude
+ * @param {float} $longitude
+ * @param {string} $countryCode (optional)
+ * @return string
+ */
+function getNearestTimezone($latitude, $longitude, $countryCode = '') {
+    $countryCode = strtoupper(trim($countryCode));
+    $timezone_ids = ($countryCode) ? DateTimeZone::listIdentifiers(DateTimeZone::PER_COUNTRY, $countryCode) : DateTimeZone::listIdentifiers();
+    if($timezone_ids && is_array($timezone_ids) && isset($timezone_ids[0])) {
+        $time_zone = '';
+        $tz_distance = 0;
+        $timezone_obj = null;
+
+        //only one identifier?
+        if (count($timezone_ids) == 1) {
+            $time_zone = $timezone_ids[0];
+        } else {
+            foreach($timezone_ids as $timezone_id) {
+                $timezone = new DateTimeZone($timezone_id);
+                $location = $timezone->getLocation();
+                $tz_lat   = $location['latitude'];
+                $tz_long  = $location['longitude'];
+
+                $theta    = $longitude - $tz_long;
+                $distance = (sin(deg2rad($latitude)) * sin(deg2rad($tz_lat))) + (cos(deg2rad($latitude)) * cos(deg2rad($tz_lat)) * cos(deg2rad($theta)));
+                $distance = acos($distance);
+                $distance = abs(rad2deg($distance));
+
+                if (!$time_zone || $tz_distance > $distance) {
+                    $time_zone   = $timezone_id;
+                    $tz_distance = $distance;
+                    $timezone_obj = $timezone;
+                }
+            }
+        }
+        return $timezone_obj;
+    }
+    return null;
+}
