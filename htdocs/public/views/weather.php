@@ -272,7 +272,7 @@
                 $date = new DateTime("today midnight", $tz);
 
                 $almanac = array();
-                for ($x = 0; $x < 8; $x++) {
+                for ($x = 0; $x < 7; $x++) {
                   $almanac[$x] = PacketWeatherRepository::getInstance()->getAlmanac($station->id, $date->getTimestamp() - (86400 * $x));
                 }
                 $almanac_today = $almanac[0];
