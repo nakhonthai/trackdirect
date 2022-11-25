@@ -61,7 +61,7 @@ class StationRepository extends ModelRepository
         static $cache = array();
         $key = $name;
         if (!isset($cache[$key])) {
-            $cache[$key] = $this->getObjectFromSql('select * from station where name = ? order by latest_location_packet_timestamp desc limit 1', [$name]);
+            $cache[$key] = $this->getObjectFromSql('select * from station where name = ? order by latest_location_packet_timestamp desc nulls last limit 1', [$name]);
         }
         return $cache[$key];
     }

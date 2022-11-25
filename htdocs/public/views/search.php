@@ -7,9 +7,10 @@
     $rows = $_GET['rows'] ?? 50;
     $offset = ($page - 1) * $rows;
     $count = 0;
-    if (isset($_GET['q'])) {
-        $stations = StationRepository::getInstance()->getObjectListByQueryString($_GET['q'], $seconds, $rows, $offset);
-        $count = StationRepository::getInstance()->getNumberOfStationsByQueryString($_GET['q'], $seconds);
+    $query = strtoupper(trim($_GET['q']));
+    if (!empty($query)) {
+        $stations = StationRepository::getInstance()->getObjectListByQueryString($query, $seconds, $rows, $offset);
+        $count = StationRepository::getInstance()->getNumberOfStationsByQueryString($query, $seconds);
     }
     $pages = ceil($count / $rows);
 ?>
@@ -30,7 +31,7 @@
             </select>
         </div>
         <div>
-            <input type="text" style="width: 280px; margin-bottom: 5px;" id="station-search-form-q" name="q" placeholder="Search here!" title="Search for a station/vehicle here!" value="<?php echo ($_GET['q'] ?? '') ?>">
+            <input type="text" style="width: 280px; margin-bottom: 5px;" id="station-search-form-q" name="q" placeholder="Search here!" title="Search for a station/vehicle here!" value="<?php echo ($query ?? '') ?>">
             <input type="submit" value="Search">
         </div>
     </form>
@@ -44,11 +45,11 @@
 
         <?php if ($pages > 1): ?>
             <div class="pagination">
-              <a class="tdlink" href="/search.php?q=<?php echo ($_GET['q'] ?? "") ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&seconds=<?php echo $seconds ?>&page=1"><<</a>
+              <a class="tdlink" href="/search.php?q=<?php echo ($query ?? "") ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&seconds=<?php echo $seconds ?>&page=1"><<</a>
               <?php for($i = max(1, $page - 3); $i <= min($pages, $page + 3); $i++) : ?>
-              <a href="/search.php?q=<?php echo ($_GET['q'] ?? "") ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&seconds=<?php echo $seconds ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
+              <a href="/search.php?q=<?php echo ($query ?? "") ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&seconds=<?php echo $seconds ?>&page=<?php echo $i; ?>" <?php echo ($i == $page ? 'class="tdlink active"': 'class="tdlink"')?>><?php echo $i ?></a>
               <?php endfor; ?>
-              <a class="tdlink" href="/search.php?q=<?php echo ($_GET['q'] ?? "") ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&seconds=<?php echo $seconds ?>&page=<?php echo $pages; ?>">>></a>
+              <a class="tdlink" href="/search.php?q=<?php echo ($query ?? "") ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>&seconds=<?php echo $seconds ?>&page=<?php echo $pages; ?>">>></a>
             </div>
         <?php endif; ?>
 
@@ -58,11 +59,10 @@
                     <tr>
                         <th>&nbsp;</th>
                         <th>Name/Id</th>
-                        <th>Latest heard</th>
+                        <th>Latest heard *</th>
                         <th>Comment/Other</th>
                         <th>Features</th>
                         <th>Map</th>
-
                     </tr>
                 </thead>
                 <tbody>
@@ -74,7 +74,7 @@
                         <td>
                             <a class="tdlink" href="/views/overview.php?id=<?php echo $foundStation->id; ?>&imperialUnits=<?php echo $_GET['imperialUnits'] ?? 0; ?>"><?php echo htmlentities($foundStation->name) ?></a>
                         </td>
-                        <td class="station-latest-heard-timestamp" style="white-space: nowrap;">
+                        <td class="station-latest-heard-timestamp" style="white-space: nowrap;" data-station-id="<?php echo $foundStation->id; ?>">
                             <?php echo $foundStation->latestConfirmedPacketTimestamp; ?>
                         </td>
                         <td>
@@ -108,9 +108,13 @@
                 </tbody>
             </table>
         </div>
+        <br/>
+        <?php if (isAllowedToShowOlderData()): ?>
+          <p>* Activates Time Travel to that point time and centers the map on the station.</p>
+        <?php endif; ?>
     <?php endif; ?>
 
-    <?php if (isset($_GET['q']) && count($stations) == 0) : ?>
+    <?php if (isset($query) && count($stations) == 0) : ?>
         <p>
             <b><i>No stations packets found.</i></b>
         </p>
@@ -121,14 +125,8 @@
         var locale = window.navigator.userLanguage || window.navigator.language;
         moment.locale(locale);
 
-        $('.station-latest-heard-timestamp').each(function() {
-            if ($(this).html().trim() != '' && !isNaN($(this).html().trim())) {
-                $(this).html(moment(new Date(1000 * $(this).html())).format('L LTSZ'));
-            }
-        });
-
         $('#station-search-form').bind('submit',function(e) {
-          var q = $('#station-search-form-q').val();
+          var q = $('#station-search-form-q').val().trim();
           var seconds = $('#station-search-form-seconds').val();
           loadView('/views/search.php?imperialUnits=<?php echo $_GET['imperialUnits'] ?? '0'; ?>&q=' + q + '&seconds=' + seconds);
           e.preventDefault();
@@ -136,6 +134,26 @@
 
         $(".tdlink").bind('click', function(e) {
           loadView(this.href);
+          e.preventDefault();
+        });
+
+        $('.station-latest-heard-timestamp').each(function() {
+            if ($(this).html().trim() != '' && !isNaN($(this).html().trim())) {
+              <?php if (!isAllowedToShowOlderData()): ?>
+                $(this).html(moment(new Date(1000 * $(this).html())).format('L LTSZ'));
+              <?php else: ?>
+                $(this).html('<a href="#" title="Time Warp & Filter on this Station" data-ts="'+$(this).text()+'">' + moment(new Date(1000 * $(this).html())).format('L LTSZ') + '</a>');
+              <?php endif; ?>
+            }
+        });
+
+        $(".station-latest-heard-timestamp a, .timewarp").bind('click', function(e) {
+          trackdirect.setTimeLength(60, false);
+          window.trackdirect.setTimeTravelTimestamp($(this).attr('data-ts'));
+          $('#right-container-timetravel-content').html('Showing ' + moment(new Date(1000 * $(this).attr('data-ts'))).format('L LTS'));
+          $('#right-container-timetravel').show();
+          window.trackdirect.filterOnStationId([]);
+          window.trackdirect.filterOnStationId($(this).parent().attr('data-station-id'));
           e.preventDefault();
         });
     });

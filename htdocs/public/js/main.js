@@ -10,7 +10,7 @@ jQuery(document).ready(function ($) {
   }
 
   $('#hdr-search-form').bind('submit',function(e) {
-    var q = $('#hdr-search-form-q').val();
+    var q = $('#hdr-search-form-q').val().trim();
     $('#hdr-search-form-q').val('');
     var seconds = $('#hdr-search-form-seconds').val();
     loadView('/views/search.php?imperialUnits=' + (trackdirect.isImperialUnits() ? 1 : 0 ) + '&q=' + q + '&seconds=' + seconds);
