@@ -30,7 +30,7 @@
 
     <!-- JQuery Datatables -->
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.12.1/r-2.3.0/datatables.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.12.1/r-2.3.0/datatables.min.css"/> 
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.12.1/r-2.3.0/datatables.min.css"/>
 
     <!-- Graphing dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -357,7 +357,7 @@
 
       <div id="map-container"></div>
 
-      <div id="footer">&copy; 2022 <?php echo getWebsiteConfig('owner_name'); ?>.   Based on <a target="_blank" href="https://www.aprsdirect.com">APRS Track Direct</a></div>
+      <div id="footer">&copy; 2022 <?php echo getWebsiteConfig('owner_name'); ?>.</div>
 
       <div id="right-container">
           <div id="right-container-info">
