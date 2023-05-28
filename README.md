@@ -4,8 +4,6 @@ APRS Track Direct is a collection of tools that can be used to run an APRS websi
 
 Tools included are an APRS data collector, a websocket server, a javascript library (websocket client and more) and a website example (which can of course be used as is).
 
-Please note that it is almost 10 years since I wrote the majority of the code, and when the code was written, it was never intended to be published ...
-
 ## What is APRS?
 APRS (Automatic Packet Reporting System) is a digital communications system that uses packet radio to send real time tactical information. The APRS network is used by ham radio operators all over the world.
 
@@ -17,7 +15,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 Please note that the instructions is not intended to be something that you can follow exactly without any adaptions. See the instructions as initial tips on how the tools can be used, and read the code to get a deeper understanding.
 
-Further down you will find some information how to install trackdirect with Docker and Docker-Compose.
+Further down you will find some information how to install trackdirect with Docker and Docker Compose.
 
 ### Prerequisites
 
@@ -25,36 +23,8 @@ What things you need to install and how to install them. These instructions are 
 
 Install some ubuntu packages
 ```
-sudo apt-get install libpq-dev postgresql-12 postgresql-client-common postgresql-client libevent-dev apache2 php libapache2-mod-php php-dom php-pgsql libmagickwand-dev imagemagick php-imagick inkscape php-gd
-```
-**Note that php-gd was added to these instructions during the summer of 2022, it is needed for the new heatmap generator.**
-
-#### Install python
-Unfortunately, the majority of this code was written when python 2 was still common and used, this means that the installation process needs to be adapted a bit. You might see some deprication warnings when starting the collector and websocket server.
-
-Install python 2
-```
-sudo add-apt-repository universe
 sudo apt update
-sudo apt install python2 python2-dev
-```
-
-Install pip2 (pip for python 2)
-```
-curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-sudo python2 get-pip.py
-```
-
-Install needed python libs
-```
-pip2 install psycopg2-binary wheel setuptools autobahn[twisted] twisted pympler image_slicer jsmin psutil
-```
-
-Install the python aprs lib (aprs-python)
-```
-git clone https://github.com/rossengeorgiev/aprs-python
-cd aprs-python/
-pip2 install .
+sudo apt-get install libpq-dev postgresql-12 postgresql-client-common postgresql-client libevent-dev apache2 php libapache2-mod-php php-dom php-pgsql libmagickwand-dev imagemagick php-imagick inkscape php-gd libjpeg-dev python3 python3-dev python3-pip python-is-python3
 ```
 
 ### Set up aprsc
@@ -95,16 +65,30 @@ sudo /opt/aprsc/sbin/aprsc -u aprsc -t /opt/aprsc2 -c /etc/aprsc2.conf -r /logs2
 
 ### Installing Track Direct
 
+Note: TrackDirect have to be installed in the user home directory, it can't be in any subdirectory.
+
+
 Start by cloning the repository
 ```
 git clone https://github.com/qvarforth/trackdirect
+cd trackdirect
+```
+
+Before installing all python requirements it is likly that you need to upgrade pyOpenSSL.
+```
+sudo python -m easy_install --upgrade pyOpenSSL
+```
+
+Install needed python libs
+```
+pip install -r requirements.txt
 ```
 
 #### Set up database
 
-Set up the database (connect to database using: "sudo -u postgres psql"). You need to replace "my_username".
+Set up the database (connect to database using: "sudo -u postgres psql"). You need to replace "my_username".  Note that APRS using UTF-8 encoding so it may be necessary to specify as shown.
 ```
-CREATE DATABASE trackdirect;
+CREATE DATABASE trackdirect ENCODING 'UTF8';
 
 CREATE USER my_username WITH PASSWORD 'foobar';
 ALTER ROLE my_username WITH SUPERUSER;
@@ -116,14 +100,14 @@ Might be good to add password to password-file:
 vi ~/.pgpass
 ```
 
-##### Increase performance
+##### Increase database performance
 It might be a good idea to play around with some Postgresql settings to improve performance (for this application, speed is more important than minimizing the risk of data loss).
 
 Some settings in /etc/postgresql/12/main/postgresql.conf that might improve performance:
 ```
 shared_buffers = 2048MB              # I recommend 25% of total RAM
 synchronous_commit=off               # Avoid writing to disk for every commit
-commit_delay=100000                  # Will result in a 0.1s delay
+commit_delay=100000                  # Will result in a 0.1s commit delay
 ```
 
 Restart postgresql
@@ -143,6 +127,12 @@ If you are using data from OGN (Open Glider Network) it is IMPORTANT to keep the
 ~/trackdirect/server/scripts/ogn_devices_install.sh trackdirect 5432
 ```
 
+#### Configure trackdirect
+Before starting the websocket server you need to update the trackdirect configuration file (trackdirect/config/trackdirect.ini). Read through the configuration file and make any necessary changes.
+```
+vi ~/trackdirect/config/trackdirect.ini
+```
+
 #### Start the collectors
 Before starting the collector you need to update the trackdirect configuration file (trackdirect/config/trackdirect.ini).
 
@@ -152,11 +142,9 @@ Start the collector by using the provided shell-script. Note that if you have co
 ```
 
 #### Start the websocket server
-Before starting the websocket server you need to update the trackdirect configuration file (trackdirect/config/trackdirect.ini).
-
 When the user interacts with the map we want it to be populated with objects from the backend. To achive good performance we avoid using background HTTP requests (also called AJAX requests), instead we use websocket communication. The included trackdirect js library (trackdirect.min.js) will connect to our websocket server and request objects for the current map view.
 
-Start the websocket server by using the provided shell scripti, the script should be executed by the user that you granted access to the database "trackdirect".
+Start the websocket server by using the provided shell script, the script should be executed by the user that you granted access to the database "trackdirect".
 ```
 ~/trackdirect/server/scripts/wsserver.sh trackdirect.ini
 ```
@@ -239,36 +227,32 @@ How powerful server you need depends on what type of data source you are going t
 
 
 ## Getting Started - Docker
-There is everything prepared to run trackdirect inside of some docker containers. As there is a Docker-Compose file the setup is very simple and fast.
+Everything is prepared to run trackdirect inside of docker containers. As there is a Docker Compose file the setup is very simple and fast.
 
-### Install Docker and Docker-Compose
-Install [docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/) from the published websites.
+### Install Docker and the Docker Compose plugin
+Install [Docker and docker-compose-plugin](https://docs.docker.com/engine/install/) as per instructions on their website.
 
 ### Config file
-Adopt your config in `config/aprsc.conf` and `config/trackdirect.ini`. In `trackdirect.ini` search for 'docker' and change the lines as described in the comments.
+Adopt the config in `config/aprsc.conf` and `config/trackdirect.ini`. In `trackdirect.ini` additionally search for 'docker' and change the lines as described in the comments.
 
 
-### Run Docker-Compose for development containers
-To startup trackdirect in an development container run this docker-compose command:
-
-```
-docker-compose up
-```
-
-If you want to run the container in daemon mode add `-d` to the command.
-
-### Run Docker-Compose for the last published docker images
-
-@peterus is creating regular docker images from this repository. With the release Docker-Compose file you do not need to install and compile everything by your own.
+### Run Docker Compose for development containers
+To startup trackdirect in a development container run this Docker Compose command:
 
 ```
-docker-compose -f docker-compose-rel.yml up
+docker compose up
 ```
 
+If you want to run the container in daemon mode (background) add `-d` to the command and use `docker compose logs -f` to watch the output on demand. To stop the containers use `docker compose down`.
 
-## TODO
-- Rewrite backend to use Python 3 instead of Python 2.
-- Create a REST-API and replace the current website example with a new frontend written in Angular.
+### Run Docker Compose for the latest published docker images
+
+@peterus is creating regular docker images from this repository. With the release Docker Compose file you don't need to install and compile everything on your own.
+
+```
+docker compose -f docker-compose-rel.yml up
+```
+This command also accepts `-d` to run as a daemon.
 
 ## Contribution
 Contributions are welcome. Create a fork and make a pull request. Thank you!

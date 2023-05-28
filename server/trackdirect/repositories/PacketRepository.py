@@ -1,7 +1,3 @@
-import datetime
-import time
-import calendar
-import collections
 
 from trackdirect.common.Repository import Repository
 from trackdirect.objects.Packet import Packet
@@ -376,7 +372,7 @@ class PacketRepository(Repository):
 
             sql = sql + \
                 selectCursor.mogrify(
-                    """order by marker_id desc, id desc limit 1""")
+                    """ order by marker_id desc, id desc limit 1""")
             # Sort by marker_id first and packet as second, otherwise client might render it wrong
 
             selectCursor.execute(sql)
@@ -407,7 +403,7 @@ class PacketRepository(Repository):
         record = selectCursor.fetchone()
         selectCursor.close()
 
-        if (record is not None and record["latest_confirmed_packet_timestamp"] >= minTimestamp):
+        if (record is not None and record["latest_confirmed_packet_timestamp"] is not None and record["latest_confirmed_packet_timestamp"] >= minTimestamp):
             return self.getObjectByIdAndTimestamp(record["latest_confirmed_packet_id"], record["latest_confirmed_packet_timestamp"])
         else:
             return self.create()
@@ -431,11 +427,10 @@ class PacketRepository(Repository):
         record = selectCursor.fetchone()
         selectCursor.close()
 
-        if (record is not None and record["latest_location_packet_timestamp"] >= minTimestamp):
+        if (record is not None and record["latest_location_packet_timestamp"] is not None and record["latest_location_packet_timestamp"] >= minTimestamp):
             return self.getObjectByIdAndTimestamp(record["latest_location_packet_id"], record["latest_location_packet_timestamp"])
         else:
             return self.create()
-
 
     def getMostRecentConfirmedObjectListByStationIdList(self, stationIdList, minTimestamp):
         """Returns an array of the most recent confirmed Packet's specified by station id's
